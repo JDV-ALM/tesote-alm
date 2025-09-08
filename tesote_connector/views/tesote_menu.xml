@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menu -->
+    <menuitem 
+        id="menu_tesote_root"
+        name="Tesote"
+        sequence="50"
+        web_icon="tesote_connector,static/description/icon.png"/>
+    
+    <!-- Configuration Menu -->
+    <menuitem
+        id="menu_tesote_configuration"
+        name="Configuration"
+        parent="menu_tesote_root"
+        sequence="100"/>
+    
+    <!-- API Configuration Menu - Opens singleton configuration -->
+    <menuitem
+        id="menu_tesote_backend"
+        name="API Settings"
+        parent="menu_tesote_configuration"
+        action="action_tesote_backend_open"
+        sequence="10"/>
+    
+    <!-- Data Menu -->
+    <menuitem
+        id="menu_tesote_data"
+        name="Financial Data"
+        parent="menu_tesote_root"
+        sequence="10"/>
+    
+    <!-- Accounts Menu -->
+    <menuitem
+        id="menu_tesote_account"
+        name="Accounts"
+        parent="menu_tesote_data"
+        action="action_tesote_account"
+        sequence="10"/>
+    
+    <!-- Transactions Menu -->
+    <menuitem
+        id="menu_tesote_transaction"
+        name="Transactions"
+        parent="menu_tesote_data"
+        action="action_tesote_transaction"
+        sequence="20"/>
+    
+    <!-- Reports Menu -->
+    <menuitem
+        id="menu_tesote_reports"
+        name="Reports"
+        parent="menu_tesote_root"
+        sequence="50"/>
+    
+    <!-- Transaction Analysis -->
+    <menuitem
+        id="menu_tesote_transaction_analysis"
+        name="Transaction Analysis"
+        parent="menu_tesote_reports"
+        action="action_tesote_transaction"
+        sequence="10"/>
+</odoo>

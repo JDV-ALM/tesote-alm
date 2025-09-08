@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_tesote_backend_form" model="ir.ui.view">
+        <field name="name">tesote.backend.form</field>
+        <field name="model">tesote.backend</field>
+        <field name="arch" type="xml">
+            <form string="Tesote Backend">
+                <header>
+                    <button name="test_connection" type="object" string="Test Connection" class="btn-primary" icon="fa-plug"/>
+                    <button name="import_accounts" type="object" string="Import Accounts" class="btn-secondary" icon="fa-download"/>
+                    <button name="sync_all_transactions" type="object" string="Sync All Transactions" class="btn-secondary" icon="fa-sync"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,active"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_accounts" icon="fa-university">
+                            <field string="Accounts" name="account_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" type="object" name="action_view_transactions" icon="fa-exchange">
+                            <field string="Transactions" name="transaction_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>Tesote API Configuration</h1>
+                        <field name="name" invisible="1"/>
+                    </div>
+                    <group>
+                        <group string="API Configuration">
+                            <field name="api_url" placeholder="https://staging.tesote.com"/>
+                            <field name="api_token" password="True" placeholder="Bearer token"/>
+                            <field name="rate_limit_tier" help="Your API tier determines rate limits"/>
+                        </group>
+                        <group string="Connection Status">
+                            <field name="last_sync_date" readonly="1"/>
+                            <field name="sync_state" readonly="1"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Webhook Configuration" groups="base.group_no_one">
+                        <group>
+                            <field name="webhook_url" placeholder="https://your-domain.com/webhook/tesote"/>
+                            <field name="webhook_secret" password="True"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Synchronization">
+                            <group>
+                                <field name="auto_sync_enabled"/>
+                                <field name="sync_interval_hours" invisible="not auto_sync_enabled"/>
+                                <field name="last_account_import_date" readonly="1"/>
+                                <field name="last_transaction_sync_date" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Accounts">
+                            <field name="account_ids" readonly="1"/>
+                        </page>
+                        <page string="Technical" groups="base.group_no_one">
+                            <group>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="create_date" readonly="1"/>
+                                <field name="write_date" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Server Action to open singleton configuration -->
+    <record id="action_tesote_backend_open" model="ir.actions.server">
+        <field name="name">Configuration</field>
+        <field name="model_id" ref="model_tesote_backend"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_configuration()</field>
+    </record>
+    
+    <!-- Keep the old action for compatibility but redirect it -->
+    <record id="action_tesote_backend" model="ir.actions.act_window">
+        <field name="name">Backend Configuration</field>
+        <field name="res_model">tesote.backend</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_tesote_backend_form"/>
+        <field name="target">current</field>
+    </record>
+</odoo>

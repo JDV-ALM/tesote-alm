@@ -1,88 +1,47 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
-/.venv
-/.pytest_cache
-/.ruff_cache
-
-# C extensions
+*$py.class
 *.so
-
-# Distribution / packaging
 .Python
-env/
-bin/
-build/
-develop-eggs/
-dist/
-eggs/
-lib64/
-parts/
-sdist/
-var/
 *.egg-info/
-.installed.cfg
-*.egg
-*.eggs
+dist/
+build/
 
-# Windows installers
-*.msi
+# Virtual Environment
+venv/
+.venv/
+env/
+.env
 
-# Debian packages
-*.deb
-
-# Redhat packages
-*.rpm
-
-# MacOS packages
-*.dmg
-*.pkg
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
+# Testing
 .coverage
-.cache
-nosetests.xml
-coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
 
-# Translations
-*.mo
-
-# Pycharm
-.idea
-
-# Eclipse
-.settings
-
-# Visual Studio cache/options directory
-.vs/
-.vscode
-
-# OSX Files
-.DS_Store
-
-# Django stuff:
-*.log
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
-# Rope
-.ropeproject
-
-# Sphinx documentation
-docs/_build/
-
-# Backup files
-*~
+# IDE
+.vscode/
+.idea/
 *.swp
+*.swo
+*~
 
-# OCA rules
-!static/lib/
+# OS
+.DS_Store
+Thumbs.db
+
+# Odoo
+*.log
+*.db
+odoo.conf
+.odoorc
+
+# Project specific
+/htmlcov/
+/coverage.xml
+/backups/
+
+# Docker
+docker-compose.override.yml
+.env.local

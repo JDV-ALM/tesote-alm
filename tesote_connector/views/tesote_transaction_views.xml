@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_tesote_transaction_form" model="ir.ui.view">
+        <field name="name">tesote.transaction.form</field>
+        <field name="model">tesote.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Tesote Transaction">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="tesote_id" readonly="1"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Transaction Details">
+                            <field name="account_id" readonly="1"/>
+                            <field name="backend_id" readonly="1"/>
+                            <field name="transaction_date"/>
+                            <field name="amount"/>
+                            <field name="currency_id"/>
+                            <field name="status"/>
+                        </group>
+                        <group string="Counterparty">
+                            <field name="counterparty_name"/>
+                            <field name="categories"/>
+                        </group>
+                    </group>
+                    <group string="Synchronization" groups="base.group_no_one">
+                        <field name="tesote_imported_at" readonly="1"/>
+                        <field name="tesote_updated_at" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_tesote_transaction_tree" model="ir.ui.view">
+        <field name="name">tesote.transaction.tree</field>
+        <field name="model">tesote.transaction</field>
+        <field name="arch" type="xml">
+            <list string="Tesote Transactions" decoration-warning="status == 'pending'" decoration-success="status == 'completed'">
+                <field name="transaction_date"/>
+                <field name="name"/>
+                <field name="account_id"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id"/>
+                <field name="counterparty_name"/>
+                <field name="categories"/>
+                <field name="status"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_tesote_transaction_search" model="ir.ui.view">
+        <field name="name">tesote.transaction.search</field>
+        <field name="model">tesote.transaction</field>
+        <field name="arch" type="xml">
+            <search string="Search Tesote Transactions">
+                <field name="name"/>
+                <field name="tesote_id"/>
+                <field name="counterparty_name"/>
+                <field name="categories"/>
+                <filter string="Pending" name="pending" domain="[('status', '=', 'pending')]"/>
+                <filter string="Completed" name="completed" domain="[('status', '=', 'completed')]"/>
+                <separator/>
+                <filter string="Today" name="today" domain="[('transaction_date', '>=', datetime.datetime.now().replace(hour=0, minute=0, second=0)), ('transaction_date', '&lt;', datetime.datetime.now().replace(hour=23, minute=59, second=59))]"/>
+                <filter string="Last 7 Days" name="week" domain="[('transaction_date', '>=', (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 30 Days" name="month" domain="[('transaction_date', '>=', (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Income" name="income" domain="[('amount', '>', 0)]"/>
+                <filter string="Expense" name="expense" domain="[('amount', '&lt;', 0)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Account" name="group_account" context="{'group_by': 'account_id'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'transaction_date:month'}"/>
+                    <filter string="Counterparty" name="group_counterparty" context="{'group_by': 'counterparty_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_tesote_transaction_pivot" model="ir.ui.view">
+        <field name="name">tesote.transaction.pivot</field>
+        <field name="model">tesote.transaction</field>
+        <field name="arch" type="xml">
+            <pivot string="Transaction Analysis">
+                <field name="account_id" type="row"/>
+                <field name="transaction_date" interval="month" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_tesote_transaction_graph" model="ir.ui.view">
+        <field name="name">tesote.transaction.graph</field>
+        <field name="model">tesote.transaction</field>
+        <field name="arch" type="xml">
+            <graph string="Transaction Trends">
+                <field name="transaction_date" interval="month"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_tesote_transaction" model="ir.actions.act_window">
+        <field name="name">Transactions</field>
+        <field name="res_model">tesote.transaction</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_tesote_transaction_search"/>
+        <field name="context">{'search_default_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No transactions synchronized yet
+            </p>
+            <p>
+                Sync transactions from your Tesote accounts.
+            </p>
+        </field>
+    </record>
+</odoo>

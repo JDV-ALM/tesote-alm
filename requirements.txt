@@ -1,2 +1,2 @@
-# generated from manifests external_dependencies
-cachetools
+# Python dependencies for Tesote Connector
+requests>=2.28.0

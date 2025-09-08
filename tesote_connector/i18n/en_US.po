@@ -1,0 +1,95 @@
+# Translation of Odoo Module.
+# This file contains the translation of the following modules:
+# 	* tesote_connector
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-08 19:00:00\n"
+"PO-Revision-Date: 2025-09-08 19:00:00\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Test Connection"
+msgstr "Test Connection"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Import Accounts"
+msgstr "Import Accounts"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Sync All Transactions"
+msgstr "Sync All Transactions"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "API Configuration"
+msgstr "API Configuration"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Rate Limiting"
+msgstr "Rate Limiting"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Synchronization"
+msgstr "Synchronization"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Connection successful!<br/>Client: %s<br/>Environment: %s"
+msgstr "Connection successful!<br/>Client: %s<br/>Environment: %s"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Success"
+msgstr "Success"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Connection failed: %s"
+msgstr "Connection failed: %s"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Only one Tesote Backend configuration is allowed. Please edit the existing configuration."
+msgstr "Only one Tesote Backend configuration is allowed. Please edit the existing configuration."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Only one Tesote Backend configuration is allowed."
+msgstr "Only one Tesote Backend configuration is allowed."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "No accounts to sync. Please import accounts first."
+msgstr "No accounts to sync. Please import accounts first."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Imported %d accounts"
+msgstr "Imported %d accounts"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Import failed: %s"
+msgstr "Import failed: %s"

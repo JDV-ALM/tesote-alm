@@ -1,0 +1,333 @@
+# Translation of Odoo Module.
+# This file contains the translation of the following modules:
+# 	* tesote_connector
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-08 19:00:00\n"
+"PO-Revision-Date: 2025-09-08 19:00:00\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Test Connection"
+msgstr "Probar Conexión"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Import Accounts"
+msgstr "Importar Cuentas"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Sync All Transactions"
+msgstr "Sincronizar Todas las Transacciones"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "API Configuration"
+msgstr "Configuración de API"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Rate Limiting"
+msgstr "Límite de Velocidad"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Synchronization"
+msgstr "Sincronización"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Connection successful!<br/>Client: %s<br/>Environment: %s"
+msgstr "¡Conexión exitosa!<br/>Cliente: %s<br/>Entorno: %s"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Success"
+msgstr "Éxito"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Connection failed: %s"
+msgstr "Conexión fallida: %s"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Only one Tesote Backend configuration is allowed. Please edit the existing configuration."
+msgstr "Solo se permite una configuración de Backend de Tesote. Por favor, edite la configuración existente."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Only one Tesote Backend configuration is allowed."
+msgstr "Solo se permite una configuración de Backend de Tesote."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "No accounts to sync. Please import accounts first."
+msgstr "No hay cuentas para sincronizar. Por favor, importe las cuentas primero."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Imported %d accounts"
+msgstr "Se importaron %d cuentas"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Import failed: %s"
+msgstr "Error en la importación: %s"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Sync Complete"
+msgstr "Sincronización Completa"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Transactions synced: %(added)d added, %(modified)d modified, %(removed)d removed"
+msgstr "Transacciones sincronizadas: %(added)d añadidas, %(modified)d modificadas, %(removed)d eliminadas"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_root
+msgid "Tesote"
+msgstr "Tesote"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_configuration
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_backend
+msgid "API Settings"
+msgstr "Configuración de API"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_data
+msgid "Financial Data"
+msgstr "Datos Financieros"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_account
+msgid "Accounts"
+msgstr "Cuentas"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_transaction
+msgid "Transactions"
+msgstr "Transacciones"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_reports
+msgid "Reports"
+msgstr "Informes"
+
+#. module: tesote_connector
+#: model:ir.ui.menu,name:tesote_connector.menu_tesote_transaction_analysis
+msgid "Transaction Analysis"
+msgstr "Análisis de Transacciones"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_form
+msgid "Sync from Tesote"
+msgstr "Sincronizar desde Tesote"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_form
+msgid "Import Transactions"
+msgstr "Importar Transacciones"
+
+#. module: tesote_connector
+#: model_terms:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_tree
+msgid "Tesote Transactions"
+msgstr "Transacciones de Tesote"
+
+#. module: tesote_connector
+#: model:ir.model,name:tesote_connector.model_tesote_backend
+msgid "Tesote Backend Configuration"
+msgstr "Configuración del Backend de Tesote"
+
+#. module: tesote_connector
+#: model:ir.model,name:tesote_connector.model_tesote_account
+msgid "Tesote Account"
+msgstr "Cuenta de Tesote"
+
+#. module: tesote_connector
+#: model:ir.model,name:tesote_connector.model_tesote_transaction
+msgid "Tesote Transaction"
+msgstr "Transacción de Tesote"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__api_url
+msgid "API URL"
+msgstr "URL de API"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__api_token
+msgid "API Token"
+msgstr "Token de API"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__state
+msgid "State"
+msgstr "Estado"
+
+#. module: tesote_connector
+#: selection:tesote.backend,state:0
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: tesote_connector
+#: selection:tesote.backend,state:0
+msgid "Confirmed"
+msgstr "Confirmado"
+
+#. module: tesote_connector
+#: selection:tesote.backend,state:0
+msgid "Active"
+msgstr "Activo"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "API is not available"
+msgstr "La API no está disponible"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Tesote Configuration"
+msgstr "Configuración de Tesote"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Tesote Accounts"
+msgstr "Cuentas de Tesote"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Tesote Transactions"
+msgstr "Transacciones de Tesote"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Tesote API Configuration"
+msgstr "Configuración de API de Tesote"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Connection Status"
+msgstr "Estado de Conexión"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Webhook Configuration"
+msgstr "Configuración de Webhook"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__last_sync_date
+msgid "Last Synchronization"
+msgstr "Última Sincronización"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__sync_state
+msgid "Sync State"
+msgstr "Estado de Sincronización"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__webhook_url
+msgid "Webhook URL"
+msgstr "URL de Webhook"
+
+#. module: tesote_connector
+#: model:ir.model.fields,field_description:tesote_connector.field_tesote_backend__webhook_secret
+msgid "Webhook Secret"
+msgstr "Secreto de Webhook"
+
+#. module: tesote_connector
+#: selection:tesote.backend,rate_limit_tier:0
+msgid "Standard (200/min)"
+msgstr "Estándar (200/min)"
+
+#. module: tesote_connector
+#: selection:tesote.backend,rate_limit_tier:0
+msgid "Premium (500/min)"
+msgstr "Premium (500/min)"
+
+#. module: tesote_connector
+#: selection:tesote.backend,rate_limit_tier:0
+msgid "Enterprise (1000/min)"
+msgstr "Empresa (1000/min)"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_transaction.py:0
+#, python-format
+msgid "Journal entry already exists for this transaction"
+msgstr "Ya existe un asiento contable para esta transacción"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Pending"
+msgstr "Pendiente"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Completed"
+msgstr "Completado"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Today"
+msgstr "Hoy"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Last 7 Days"
+msgstr "Últimos 7 Días"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Last 30 Days"
+msgstr "Últimos 30 Días"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Income"
+msgstr "Ingresos"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_transaction_search
+msgid "Expense"
+msgstr "Gastos"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_account_tree
+msgid "Tesote Accounts"
+msgstr "Cuentas de Tesote"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_account.py:0
+#, python-format
+msgid "Account synchronized successfully"
+msgstr "Cuenta sincronizada exitosamente"
