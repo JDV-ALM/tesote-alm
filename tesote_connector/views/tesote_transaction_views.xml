@@ -5,7 +5,7 @@
         <field name="name">tesote.transaction.form</field>
         <field name="model">tesote.transaction</field>
         <field name="arch" type="xml">
-            <form string="Tesote Transaction">
+            <form string="Tesote Transaction" create="false" delete="false">
                 <header>
                     <field name="status" widget="statusbar" statusbar_visible="pending,completed"/>
                 </header>
@@ -46,7 +46,7 @@
         <field name="name">tesote.transaction.tree</field>
         <field name="model">tesote.transaction</field>
         <field name="arch" type="xml">
-            <list string="Tesote Transactions" decoration-warning="status == 'pending'" decoration-success="status == 'completed'">
+            <list string="Tesote Transactions" create="false" decoration-warning="status == 'pending'" decoration-success="status == 'completed'">
                 <field name="transaction_date"/>
                 <field name="name"/>
                 <field name="account_id"/>

@@ -253,9 +253,16 @@ class TesoteAccount(models.Model):
             'tesote_updated_at': self._parse_tesote_datetime(data.get('tesote_updated_at')),
         }
         
-        # Set balance if available
-        if 'balance' in data:
-            vals['balance'] = data['balance']
+        # Set balance if available - check multiple possible field names
+        balance = (
+            data.get('balance') or 
+            data.get('current_balance') or 
+            data.get('available_balance') or
+            data.get('balance_amount') or
+            0.0
+        )
+        if balance:
+            vals['balance'] = float(balance)
         
         # Set currency if available
         if 'currency' in data:
@@ -284,9 +291,16 @@ class TesoteAccount(models.Model):
             'tesote_updated_at': self._parse_tesote_datetime(data.get('tesote_updated_at')),
         }
         
-        # Update balance if available
-        if 'balance' in data:
-            vals['balance'] = data['balance']
+        # Update balance if available - check multiple possible field names
+        balance = (
+            data.get('balance') or 
+            data.get('current_balance') or 
+            data.get('available_balance') or
+            data.get('balance_amount') or
+            0.0
+        )
+        if balance:
+            vals['balance'] = float(balance)
         
         # Update currency if available
         if 'currency' in data:

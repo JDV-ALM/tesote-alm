@@ -377,6 +377,7 @@ class TesoteTransaction(models.Model):
         
         vals = {
             'account_id': account.id,
+            'backend_id': account.backend_id.id,  # Explicitly set backend_id
             'tesote_id': data['transaction_id'],
             'name': data.get('name', 'Transaction'),
             'amount': data.get('amount', 0.0),

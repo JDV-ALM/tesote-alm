@@ -1,7 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_tesote_backend_user,tesote.backend.user,model_tesote_backend,base.group_user,1,0,0,0
-access_tesote_backend_manager,tesote.backend.manager,model_tesote_backend,base.group_system,1,1,1,1
+access_tesote_backend_user,tesote.backend.user,model_tesote_backend,base.group_user,1,1,1,0
+access_tesote_backend_manager,tesote.backend.manager,model_tesote_backend,account.group_account_manager,1,1,1,1
 access_tesote_account_user,tesote.account.user,model_tesote_account,base.group_user,1,0,0,0
-access_tesote_account_manager,tesote.account.manager,model_tesote_account,base.group_system,1,1,1,1
+access_tesote_account_manager,tesote.account.manager,model_tesote_account,account.group_account_manager,1,1,1,1
 access_tesote_transaction_user,tesote.transaction.user,model_tesote_transaction,base.group_user,1,0,0,0
-access_tesote_transaction_manager,tesote.transaction.manager,model_tesote_transaction,base.group_system,1,1,1,1
+access_tesote_transaction_manager,tesote.transaction.manager,model_tesote_transaction,account.group_account_manager,1,1,1,1
+access_tesote_sync_log_user,tesote.sync.log.user,model_tesote_sync_log,base.group_user,1,1,1,0
+access_tesote_sync_log_manager,tesote.sync.log.manager,model_tesote_sync_log,account.group_account_manager,1,1,1,1
