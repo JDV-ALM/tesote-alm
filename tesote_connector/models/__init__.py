@@ -5,3 +5,4 @@ from . import tesote_binding  # Base model must be imported first
 from . import tesote_backend
 from . import tesote_account
 from . import tesote_transaction
+from . import tesote_sync_log

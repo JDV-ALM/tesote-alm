@@ -5,7 +5,7 @@
         <field name="name">tesote.account.form</field>
         <field name="model">tesote.account</field>
         <field name="arch" type="xml">
-            <form string="Tesote Account">
+            <form string="Tesote Account" create="false" delete="false">
                 <header>
                     <button name="import_transactions" type="object" string="Import Transactions" class="btn-primary" icon="fa-download"/>
                 </header>
@@ -60,10 +60,9 @@
         <field name="name">tesote.account.tree</field>
         <field name="model">tesote.account</field>
         <field name="arch" type="xml">
-            <list string="Tesote Accounts">
+            <list string="Tesote Accounts" create="false">
                 <field name="name"/>
                 <field name="tesote_id"/>
-                <field name="backend_id"/>
                 <field name="bank_name"/>
                 <field name="balance"/>
                 <field name="currency_id"/>
@@ -88,7 +87,6 @@
                 <filter string="Inactive" name="inactive" domain="[('active', '=', False)]"/>
                 <separator/>
                 <group expand="0" string="Group By">
-                    <filter string="Backend" name="group_backend" context="{'group_by': 'backend_id'}"/>
                     <filter string="Bank" name="group_bank" context="{'group_by': 'bank_name'}"/>
                     <filter string="Currency" name="group_currency" context="{'group_by': 'currency_id'}"/>
                 </group>

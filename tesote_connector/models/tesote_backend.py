@@ -7,6 +7,7 @@ Manages connection configuration and authentication to Tesote API.
 """
 
 import logging
+import threading
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -168,6 +169,18 @@ class TesoteBackend(models.Model):
         default=24
     )
     
+    sync_log_ids = fields.One2many(
+        'tesote.sync.log',
+        'backend_id',
+        string='Sync Logs'
+    )
+    
+    sync_log_count = fields.Integer(
+        string='Sync Log Count',
+        compute='_compute_sync_log_count',
+        store=False
+    )
+    
     @api.model
     def create(self, vals):
         """Override create to ensure only one backend exists."""
@@ -182,6 +195,32 @@ class TesoteBackend(models.Model):
         if self.search_count([('id', '!=', 0)]) > 1:
             raise UserError(_("Only one Tesote Backend configuration is allowed."))
     
+    def write(self, vals):
+        """Override write to handle auto sync settings."""
+        result = super(TesoteBackend, self).write(vals)
+        
+        # Update cron job when auto sync settings change
+        if 'auto_sync_enabled' in vals or 'sync_interval_hours' in vals:
+            self._update_cron_job()
+        
+        return result
+    
+    def _update_cron_job(self):
+        """Update the cron job based on auto sync settings."""
+        cron_sync = self.env.ref('tesote_connector.ir_cron_tesote_sync_transactions', raise_if_not_found=False)
+        
+        if cron_sync:
+            if self.auto_sync_enabled and self.active:
+                # Enable cron and set interval
+                cron_sync.active = True
+                cron_sync.interval_number = self.sync_interval_hours or 24
+                cron_sync.interval_type = 'hours'
+                _logger.info(f"Enabled auto sync every {self.sync_interval_hours} hours")
+            else:
+                # Disable cron
+                cron_sync.active = False
+                _logger.info("Disabled auto sync")
+    
     @api.model
     def action_open_configuration(self):
         """Open the singleton configuration or create if it doesn't exist."""
@@ -190,7 +229,7 @@ class TesoteBackend(models.Model):
             # Create default configuration
             backend = self.create({
                 'name': 'Tesote API Configuration',
-                'api_url': 'https://test-1.miamibeachstart.com',
+                'api_url': 'https://equipo.tesote.com',
                 'api_version': 'v2',
                 'api_token': '',  # User needs to set this
                 'state': 'draft',
@@ -236,6 +275,12 @@ class TesoteBackend(models.Model):
             ] if d]
             backend.last_sync_date = max(dates) if dates else False
     
+    @api.depends('sync_log_ids')
+    def _compute_sync_log_count(self):
+        """Compute sync log count."""
+        for backend in self:
+            backend.sync_log_count = len(backend.sync_log_ids)
+    
     def test_connection(self):
         """
         Test connection to Tesote API.
@@ -247,6 +292,10 @@ class TesoteBackend(models.Model):
             UserError: If connection fails
         """
         self.ensure_one()
+        
+        # Create sync log
+        SyncLog = self.env['tesote.sync.log']
+        log = SyncLog.create_log(self, 'test_connection')
         
         try:
             from ..components.adapter import TesoteAdapter
@@ -281,14 +330,20 @@ class TesoteBackend(models.Model):
                 )
                 
                 message = _(
-                    "Connection successful!<br/>"
-                    "Client: %s<br/>"
+                    "Connection successful!\n"
+                    "Client: %s\n"
                     "Environment: %s"
                 ) % (client_name, environment)
                 
                 # Update state to confirmed if in draft
                 if self.state == 'draft':
                     self.state = 'confirmed'
+                
+                # Mark log as successful
+                log.set_success(
+                    api_calls=2,  # status + whoami
+                    details=f'Connected to {client_name} - {environment}'
+                )
                 
                 # Show success notification
                 return {
@@ -306,6 +361,7 @@ class TesoteBackend(models.Model):
                     
         except Exception as e:
             _logger.error(f"Connection test failed: {str(e)}")
+            log.set_error(str(e))
             raise UserError(
                 _("Connection failed: %s") % str(e)
             )
@@ -334,11 +390,27 @@ class TesoteBackend(models.Model):
             'context': {'default_backend_id': self.id},
         }
     
+    def action_view_sync_logs(self):
+        """Open sync logs view."""
+        self.ensure_one()
+        return {
+            'name': _('Sync Logs'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'tesote.sync.log',
+            'view_mode': 'list,form',
+            'domain': [('backend_id', '=', self.id)],
+            'context': {'default_backend_id': self.id},
+        }
+    
     def import_accounts(self):
         """
         Import accounts from Tesote.
         """
         self.ensure_one()
+        
+        # Create sync log
+        SyncLog = self.env['tesote.sync.log']
+        log = SyncLog.create_log(self, 'import_accounts')
         
         try:
             from ..components.adapter import TesoteAdapter
@@ -354,6 +426,13 @@ class TesoteBackend(models.Model):
             # Update last import date
             self.last_account_import_date = fields.Datetime.now()
             
+            # Mark log as successful
+            log.set_success(
+                records_added=count,
+                api_calls=1,
+                details=f'Imported {count} accounts'
+            )
+            
             # Show success message
             return {
                 'type': 'ir.actions.client',
@@ -367,17 +446,247 @@ class TesoteBackend(models.Model):
             }
         except Exception as e:
             _logger.error(f"Account import failed: {str(e)}")
+            log.set_error(str(e))
             raise UserError(_("Import failed: %s") % str(e))
     
     def sync_all_transactions(self):
-        """Sync transactions for all accounts."""
+        """Sync transactions for all accounts - runs in background."""
         self.ensure_one()
         
         if not self.account_ids:
             raise UserError(_("No accounts to sync. Please import accounts first."))
         
-        # Use the v2 sync method which handles everything properly
-        return self.sync_transactions_v2()
+        # Start background sync
+        threading.Thread(
+            target=self._sync_transactions_background,
+            args=(self.id,),
+            daemon=True
+        ).start()
+        
+        # Return immediate notification
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Sync Started'),
+                'message': _('Transaction sync has been started in the background. Check the sync logs for progress.'),
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+    
+    def _sync_transactions_background(self, backend_id):
+        """Background worker for transaction sync."""
+        with self.env.registry.cursor() as new_cr:
+            # Create new environment with new cursor
+            new_env = api.Environment(new_cr, self.env.uid, self.env.context)
+            backend = new_env['tesote.backend'].browse(backend_id)
+            
+            # Create sync log
+            SyncLog = new_env['tesote.sync.log']
+            log = SyncLog.create_log(
+                backend, 
+                'sync_transactions',
+                is_background=True,
+                details='Background sync of all accounts'
+            )
+            
+            try:
+                # Perform the actual sync
+                total_added = 0
+                total_modified = 0
+                total_removed = 0
+                api_calls = 0
+                
+                from ..components.adapter import TesoteAdapter
+                adapter = TesoteAdapter(backend)
+                
+                for account in backend.account_ids:
+                    # Update log progress
+                    log.update_progress(
+                        details=f'Syncing account {account.name}',
+                        api_calls=api_calls
+                    )
+                    
+                    cursor_before = account.sync_cursor
+                    
+                    try:
+                        # Sync this account
+                        sync_result = adapter.sync_transactions(
+                            tesote_account_id=account.tesote_id,
+                            cursor=account.sync_cursor,
+                            count=100
+                        )
+                        api_calls += 1
+                        
+                        # Process results
+                        added_count = len(sync_result.get('added', []))
+                        modified_count = len(sync_result.get('modified', []))
+                        removed_count = len(sync_result.get('removed', []))
+                        
+                        total_added += added_count
+                        total_modified += modified_count
+                        total_removed += removed_count
+                        
+                        # Process transactions
+                        backend._process_sync_results(account, sync_result)
+                        
+                        # Update cursor
+                        if sync_result.get('next_cursor'):
+                            account.sync_cursor = sync_result['next_cursor']
+                        
+                        _logger.info(
+                            f"Synced account {account.name}: "
+                            f"+{added_count} ~{modified_count} -{removed_count}"
+                        )
+                        
+                    except UserError as e:
+                        if str(e) == "HISTORY_SYNC_FORBIDDEN:SKIP":
+                            _logger.info(f"Historical sync forbidden for account {account.name}")
+                            account.sync_cursor = "synced_without_history"
+                        else:
+                            raise
+                
+                # Update backend sync date
+                backend.last_sync_date = fields.Datetime.now()
+                backend.last_transaction_sync_date = fields.Datetime.now()
+                
+                # Mark log as successful
+                log.set_success(
+                    records_added=total_added,
+                    records_modified=total_modified,
+                    records_removed=total_removed,
+                    api_calls=api_calls,
+                    details=f'Successfully synced {len(backend.account_ids)} accounts'
+                )
+                
+                new_cr.commit()
+                _logger.info(f"Background sync completed: +{total_added} ~{total_modified} -{total_removed}")
+                
+            except Exception as e:
+                new_cr.rollback()
+                log.set_error(str(e), api_calls=api_calls)
+                _logger.error(f"Background sync failed: {str(e)}")
+                raise
+    
+    def _scheduled_full_sync_background(self, backend_id):
+        """Background worker for scheduled full sync (accounts + transactions)."""
+        with self.env.registry.cursor() as new_cr:
+            # Create new environment with new cursor
+            new_env = api.Environment(new_cr, self.env.uid, self.env.context)
+            backend = new_env['tesote.backend'].browse(backend_id)
+            
+            # Create sync log for the full operation
+            SyncLog = new_env['tesote.sync.log']
+            log = SyncLog.create_log(
+                backend, 
+                'scheduled_sync',
+                is_background=True,
+                details='Scheduled full sync: accounts + transactions'
+            )
+            
+            try:
+                total_accounts_imported = 0
+                total_transactions_added = 0
+                total_transactions_modified = 0
+                total_transactions_removed = 0
+                api_calls = 0
+                
+                # Step 1: Import accounts
+                log.update_progress(details='Importing accounts...')
+                
+                from ..components.adapter import TesoteAdapter
+                from ..components.importer import TesoteAccountBatchImporter
+                
+                adapter = TesoteAdapter(backend)
+                importer = TesoteAccountBatchImporter(new_env, backend.id)
+                
+                accounts_count = importer.run(adapter)
+                api_calls += 1
+                total_accounts_imported = accounts_count
+                
+                backend.last_account_import_date = fields.Datetime.now()
+                
+                _logger.info(f"Scheduled sync: imported {accounts_count} accounts")
+                
+                # Step 2: Sync transactions for all accounts
+                log.update_progress(
+                    details='Syncing transactions for all accounts...',
+                    records_added=total_accounts_imported,
+                    api_calls=api_calls
+                )
+                
+                for account in backend.account_ids:
+                    log.update_progress(
+                        details=f'Syncing transactions for account {account.name}',
+                        api_calls=api_calls
+                    )
+                    
+                    try:
+                        # Sync this account
+                        sync_result = adapter.sync_transactions(
+                            tesote_account_id=account.tesote_id,
+                            cursor=account.sync_cursor,
+                            count=100
+                        )
+                        api_calls += 1
+                        
+                        # Process results
+                        added_count = len(sync_result.get('added', []))
+                        modified_count = len(sync_result.get('modified', []))
+                        removed_count = len(sync_result.get('removed', []))
+                        
+                        total_transactions_added += added_count
+                        total_transactions_modified += modified_count
+                        total_transactions_removed += removed_count
+                        
+                        # Process transactions
+                        backend._process_sync_results(account, sync_result)
+                        
+                        # Update cursor
+                        if sync_result.get('next_cursor'):
+                            account.sync_cursor = sync_result['next_cursor']
+                        
+                        _logger.info(
+                            f"Scheduled sync - account {account.name}: "
+                            f"+{added_count} ~{modified_count} -{removed_count}"
+                        )
+                        
+                    except Exception as account_error:
+                        _logger.warning(
+                            f"Scheduled sync failed for account {account.name}: {str(account_error)}"
+                        )
+                        # Continue with other accounts
+                        continue
+                
+                # Update backend sync dates
+                backend.last_sync_date = fields.Datetime.now()
+                backend.last_transaction_sync_date = fields.Datetime.now()
+                
+                # Mark log as successful
+                log.set_success(
+                    records_added=total_accounts_imported + total_transactions_added,
+                    records_modified=total_transactions_modified,
+                    records_removed=total_transactions_removed,
+                    api_calls=api_calls,
+                    details=f'Scheduled sync completed: {total_accounts_imported} accounts, '
+                           f'{total_transactions_added} transactions added, '
+                           f'{total_transactions_modified} modified, '
+                           f'{total_transactions_removed} removed'
+                )
+                
+                new_cr.commit()
+                _logger.info(
+                    f"Scheduled full sync completed for {backend.name}: "
+                    f"accounts={total_accounts_imported}, transactions: "
+                    f"+{total_transactions_added} ~{total_transactions_modified} -{total_transactions_removed}"
+                )
+                
+            except Exception as e:
+                new_cr.rollback()
+                log.set_error(str(e), api_calls=api_calls)
+                _logger.error(f"Scheduled full sync failed for {backend.name}: {str(e)}")
+                raise
     
     def import_all_accounts(self):
         """
@@ -575,23 +884,40 @@ class TesoteBackend(models.Model):
     @api.model
     def _scheduler_import_accounts(self):
         """Scheduled job to import accounts."""
-        backends = self.search([('active', '=', True)])
+        backends = self.search([
+            ('active', '=', True),
+            ('auto_sync_enabled', '=', True)
+        ])
         for backend in backends:
             try:
-                backend.import_all_accounts()
+                backend.import_accounts()
             except Exception as e:
                 _logger.error(
                     f"Failed to import accounts for backend {backend.name}: {str(e)}"
                 )
     
     @api.model
-    def _scheduler_import_transactions(self):
-        """Scheduled job to import transactions."""
-        backends = self.search([('active', '=', True)])
+    def _scheduler_sync_transactions(self):
+        """Scheduled job to sync all data (accounts + transactions)."""
+        backends = self.search([
+            ('active', '=', True),
+            ('auto_sync_enabled', '=', True)
+        ])
         for backend in backends:
             try:
-                backend.import_transactions()
+                # Start full sync in background (accounts first, then transactions)
+                threading.Thread(
+                    target=backend._scheduled_full_sync_background,
+                    args=(backend.id,),
+                    daemon=True
+                ).start()
+                _logger.info(f"Started scheduled full sync for backend {backend.name}")
             except Exception as e:
                 _logger.error(
-                    f"Failed to import transactions for backend {backend.name}: {str(e)}"
+                    f"Failed to start scheduled sync for backend {backend.name}: {str(e)}"
                 )
+    
+    @api.model
+    def _scheduler_import_transactions(self):
+        """Legacy scheduled job - use _scheduler_sync_transactions instead."""
+        return self._scheduler_sync_transactions()

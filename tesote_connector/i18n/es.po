@@ -49,8 +49,8 @@ msgstr "Sincronización"
 #. module: tesote_connector
 #: code:addons/tesote_connector/models/tesote_backend.py:0
 #, python-format
-msgid "Connection successful!<br/>Client: %s<br/>Environment: %s"
-msgstr "¡Conexión exitosa!<br/>Cliente: %s<br/>Entorno: %s"
+msgid "Connection successful!\nClient: %s\nEnvironment: %s"
+msgstr "¡Conexión exitosa!\nCliente: %s\nEntorno: %s"
 
 #. module: tesote_connector
 #: code:addons/tesote_connector/models/tesote_backend.py:0

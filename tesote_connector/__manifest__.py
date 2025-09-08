@@ -45,9 +45,11 @@ Technical Highlights:
     },
     "data": [
         "security/ir.model.access.csv",
+        "data/ir_cron_data.xml",
         "views/tesote_backend_views.xml",
         "views/tesote_account_views.xml",
         "views/tesote_transaction_views.xml",
+        "views/tesote_sync_log_views.xml",
         "views/tesote_menu.xml",
     ],
     "images": [

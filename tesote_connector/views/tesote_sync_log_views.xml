@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024 tesote.com
+     License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html) -->
+<odoo>
+    <!-- Sync Log List View -->
+    <record id="view_tesote_sync_log_list" model="ir.ui.view">
+        <field name="name">tesote.sync.log.list</field>
+        <field name="model">tesote.sync.log</field>
+        <field name="arch" type="xml">
+            <list string="Sync Logs" create="false" edit="false" delete="false">
+                <field name="start_date" string="Time"/>
+                <field name="operation" string="Operation"/>
+                <field name="account_id" optional="show"/>
+                <field name="status" string="Status" widget="badge" decoration-success="status == 'success'" decoration-warning="status == 'warning'" decoration-danger="status == 'error'" decoration-info="status in ('started', 'in_progress')"/>
+                <field name="duration" string="Duration (s)" optional="show"/>
+                <field name="records_added" string="Added" optional="show"/>
+                <field name="records_modified" string="Modified" optional="show"/>
+                <field name="records_removed" string="Removed" optional="show"/>
+                <field name="api_calls" string="API Calls" optional="hide"/>
+                <field name="is_background" string="Background" widget="boolean_toggle" optional="hide"/>
+                <field name="user_id" string="User" optional="hide"/>
+                <field name="details" string="Details" optional="hide"/>
+                <field name="error_message" string="Error" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Sync Log Form View -->
+    <record id="view_tesote_sync_log_form" model="ir.ui.view">
+        <field name="name">tesote.sync.log.form</field>
+        <field name="model">tesote.sync.log</field>
+        <field name="arch" type="xml">
+            <form string="Sync Log" create="false" edit="false" delete="false">
+                <sheet>
+                    <widget name="web_ribbon" title="Success" bg_color="text-bg-success" invisible="status != 'success'"/>
+                    <widget name="web_ribbon" title="Warning" bg_color="text-bg-warning" invisible="status != 'warning'"/>
+                    <widget name="web_ribbon" title="Error" bg_color="text-bg-danger" invisible="status != 'error'"/>
+                    <widget name="web_ribbon" title="In Progress" bg_color="text-bg-info" invisible="status != 'in_progress'"/>
+                    
+                    <group>
+                        <group string="Operation Details">
+                            <field name="backend_id"/>
+                            <field name="operation"/>
+                            <field name="status"/>
+                            <field name="account_id" invisible="not account_id"/>
+                            <field name="user_id"/>
+                            <field name="is_background"/>
+                        </group>
+                        <group string="Timing">
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Sync Results" invisible="operation not in ('sync_transactions', 'import_accounts', 'sync_single_account')">
+                        <group>
+                            <field name="records_added"/>
+                            <field name="records_modified"/>
+                            <field name="records_removed"/>
+                        </group>
+                        <group>
+                            <field name="api_calls"/>
+                            <field name="cursor_before" invisible="not cursor_before"/>
+                            <field name="cursor_after" invisible="not cursor_after"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Details" invisible="not details">
+                        <field name="details" nolabel="1" colspan="2"/>
+                    </group>
+                    
+                    <group string="Error Information" invisible="status != 'error'">
+                        <field name="error_message" nolabel="1" colspan="2" class="text-danger"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Sync Log Search View -->
+    <record id="view_tesote_sync_log_search" model="ir.ui.view">
+        <field name="name">tesote.sync.log.search</field>
+        <field name="model">tesote.sync.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="operation"/>
+                <field name="status"/>
+                <field name="account_id"/>
+                <field name="user_id"/>
+                <filter string="Success" name="success" domain="[('status', '=', 'success')]"/>
+                <filter string="Errors" name="errors" domain="[('status', '=', 'error')]"/>
+                <filter string="Warnings" name="warnings" domain="[('status', '=', 'warning')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
+                <separator/>
+                <filter string="Background Jobs" name="background" domain="[('is_background', '=', True)]"/>
+                <filter string="Manual Operations" name="manual" domain="[('is_background', '=', False)]"/>
+                <separator/>
+                <filter string="Today" name="today" domain="[('start_date', '>=', datetime.datetime.now().replace(hour=0, minute=0, second=0))]"/>
+                <filter string="Last 7 Days" name="week" domain="[('start_date', '>=', (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="This Month" name="month" domain="[('start_date', '>=', datetime.datetime.now().replace(day=1).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Operation" name="group_operation" context="{'group_by': 'operation'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Account" name="group_account" context="{'group_by': 'account_id'}"/>
+                    <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'start_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action to open sync logs -->
+    <record id="action_tesote_sync_log" model="ir.actions.act_window">
+        <field name="name">Sync Logs</field>
+        <field name="res_model">tesote.sync.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_tesote_sync_log_search"/>
+        <field name="context">{'search_default_week': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No sync logs yet
+            </p>
+            <p>
+                Sync logs will appear here after running synchronization operations.
+            </p>
+        </field>
+    </record>
+
+</odoo>

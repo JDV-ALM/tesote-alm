@@ -5,12 +5,11 @@
         <field name="name">tesote.backend.form</field>
         <field name="model">tesote.backend</field>
         <field name="arch" type="xml">
-            <form string="Tesote Backend">
+            <form string="Tesote Backend" create="false" delete="false">
                 <header>
                     <button name="test_connection" type="object" string="Test Connection" class="btn-primary" icon="fa-plug"/>
                     <button name="import_accounts" type="object" string="Import Accounts" class="btn-secondary" icon="fa-download"/>
-                    <button name="sync_all_transactions" type="object" string="Sync All Transactions" class="btn-secondary" icon="fa-sync"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,active"/>
+                    <button name="sync_all_transactions" type="object" string="Sync All Transactions" class="btn-secondary" icon="fa-refresh"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -19,6 +18,9 @@
                         </button>
                         <button class="oe_stat_button" type="object" name="action_view_transactions" icon="fa-exchange">
                             <field string="Transactions" name="transaction_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" type="object" name="action_view_sync_logs" icon="fa-history">
+                            <field string="Sync Logs" name="sync_log_count" widget="statinfo"/>
                         </button>
                     </div>
                     <div class="oe_title">
@@ -84,5 +86,6 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_tesote_backend_form"/>
         <field name="target">current</field>
+        <field name="context">{'create': False, 'delete': False}</field>
     </record>
 </odoo>

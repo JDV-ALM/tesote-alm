@@ -22,6 +22,14 @@
         action="action_tesote_backend_open"
         sequence="10"/>
     
+    <!-- Sync Logs Menu -->
+    <menuitem
+        id="menu_tesote_sync_log"
+        name="Sync Logs"
+        parent="menu_tesote_configuration"
+        action="tesote_connector.action_tesote_sync_log"
+        sequence="20"/>
+    
     <!-- Data Menu -->
     <menuitem
         id="menu_tesote_data"
