@@ -60,6 +60,9 @@ Technical Highlights:
     "installable": True,
     "application": True,
     "auto_install": False,
-    "development_status": "Beta",
+    "development_status": "Production/Stable",
+    "maintainers": ["tesote"],
+    "price": 0.00,
+    "currency": "EUR",
     "support": "support-odoo@tesote.com",
 }
