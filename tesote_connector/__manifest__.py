@@ -59,5 +59,5 @@ Technical Highlights:
     "application": True,
     "auto_install": False,
     "development_status": "Beta",
-    "support": "support@tesote.com",
+    "support": "support-odoo@tesote.com",
 }
