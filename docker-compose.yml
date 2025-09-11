@@ -29,8 +29,8 @@ services:
       - PASSWORD=odoo
       - DB_NAME=tesote_dev
     volumes:
-      # Mount our module
-      - ./tesote_connector:/mnt/extra-addons/tesote_connector:ro
+      # Mount our module (now at repository root)
+      - ./:/mnt/extra-addons/tesote_connector:ro
       # Mount config
       - ./config/odoo.conf:/etc/odoo/odoo.conf:ro
       # Filestore

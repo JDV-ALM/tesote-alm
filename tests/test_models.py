@@ -23,7 +23,7 @@ class TestTesoteBackend:
     
     def test_backend_model_fields(self):
         """Test that backend model has required fields."""
-        from ..models.tesote_backend import TesoteBackend
+        from models.tesote_backend import TesoteBackend
         
         # Check required fields exist
         assert hasattr(TesoteBackend, 'name')
@@ -36,7 +36,7 @@ class TestTesoteBackend:
     
     def test_backend_defaults(self, mock_env):
         """Test backend model default values."""
-        from ..models.tesote_backend import TesoteBackend
+        from models.tesote_backend import TesoteBackend
         
         # Test that default fields exist
         assert hasattr(TesoteBackend, 'api_version')
@@ -46,7 +46,7 @@ class TestTesoteBackend:
     
     def test_backend_test_connection(self, mock_env):
         """Test backend connection testing method exists."""
-        from ..models.tesote_backend import TesoteBackend
+        from models.tesote_backend import TesoteBackend
         
         # Just verify the method exists
         assert hasattr(TesoteBackend, 'test_connection')
@@ -54,7 +54,7 @@ class TestTesoteBackend:
     
     def test_import_accounts_action(self, mock_env):
         """Test action to import accounts."""
-        from ..models.tesote_backend import TesoteBackend
+        from models.tesote_backend import TesoteBackend
         
         backend = Mock(spec=TesoteBackend)
         backend.id = 1
@@ -65,7 +65,7 @@ class TestTesoteBackend:
         backend.ensure_one = Mock()
         
         # Mock adapter and account creation
-        with patch('tesote_connector.components.adapter.TesoteAdapter') as MockAdapter:
+        with patch('components.adapter.TesoteAdapter') as MockAdapter:
             mock_adapter = Mock()
             mock_adapter.list_accounts.return_value = {
                 'accounts': [
@@ -101,7 +101,7 @@ class TestTesoteAccount:
     
     def test_account_model_fields(self):
         """Test that account model has required fields."""
-        from ..models.tesote_account import TesoteAccount
+        from models.tesote_account import TesoteAccount
         
         # Check required fields
         assert hasattr(TesoteAccount, 'name')
@@ -116,7 +116,7 @@ class TestTesoteAccount:
     
     def test_account_unique_constraint(self):
         """Test unique constraint on tesote_id per backend."""
-        from ..models.tesote_account import TesoteAccount
+        from models.tesote_account import TesoteAccount
         
         # Check SQL constraints
         constraints = TesoteAccount._sql_constraints
@@ -127,7 +127,7 @@ class TestTesoteAccount:
     
     def test_account_sync_method(self, mock_env):
         """Test account synchronization method exists."""
-        from ..models.tesote_account import TesoteAccount
+        from models.tesote_account import TesoteAccount
         
         # Verify the import_transactions method exists
         assert hasattr(TesoteAccount, 'import_transactions')
@@ -150,7 +150,7 @@ class TestTesoteTransaction:
     
     def test_transaction_model_fields(self):
         """Test that transaction model has required fields."""
-        from ..models.tesote_transaction import TesoteTransaction
+        from models.tesote_transaction import TesoteTransaction
         
         # Check required fields
         assert hasattr(TesoteTransaction, 'name')
@@ -169,7 +169,7 @@ class TestTesoteTransaction:
     
     def test_transaction_status_selection(self):
         """Test transaction status field selection values."""
-        from ..models.tesote_transaction import TesoteTransaction
+        from models.tesote_transaction import TesoteTransaction
         
         # Get status field from the class definition
         status_field = TesoteTransaction.status
@@ -185,7 +185,7 @@ class TestTesoteTransaction:
     
     def test_transaction_to_journal_entry(self, mock_env):
         """Test converting transaction to journal entry."""
-        from ..models.tesote_transaction import TesoteTransaction
+        from models.tesote_transaction import TesoteTransaction
         
         # Create a mock transaction object
         transaction = Mock(spec=TesoteTransaction)
@@ -200,7 +200,7 @@ class TestTesoteTransaction:
     
     def test_transaction_unique_constraint(self):
         """Test unique constraint on transaction."""
-        from ..models.tesote_transaction import TesoteTransaction
+        from models.tesote_transaction import TesoteTransaction
         
         # Check SQL constraints
         constraints = TesoteTransaction._sql_constraints

@@ -38,7 +38,7 @@ class TestTesoteSyncLog:
     @pytest.fixture
     def sync_log_model(self):
         """Create mock sync log model."""
-        from ..models.tesote_sync_log import TesoteSyncLog
+        from models.tesote_sync_log import TesoteSyncLog
         
         # Mock the model
         model = Mock(spec=TesoteSyncLog)
@@ -167,7 +167,7 @@ class TestBackgroundSync:
     
     def test_background_sync_threading(self, mock_backend_record):
         """Test that background sync starts a thread."""
-        from ..models.tesote_backend import TesoteBackend
+        from models.tesote_backend import TesoteBackend
         
         # Mock the threading
         with patch('threading.Thread') as mock_thread:

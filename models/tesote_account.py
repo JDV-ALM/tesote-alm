@@ -151,7 +151,7 @@ class TesoteAccount(models.Model):
         self.ensure_one()
         
         # For now, just update from API
-        from ..components.adapter import TesoteAdapter
+        from components.adapter import TesoteAdapter
         adapter = TesoteAdapter(self.backend_id)
         
         # Get account data from API

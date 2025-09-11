@@ -89,29 +89,41 @@ def run_tests():
     print("RUNNING TESOTE CONNECTOR TESTS")
     print("="*60 + "\n")
     
-    # Configure pytest arguments
-    args = [
-        'tesote_connector/tests/',
-        '-v',
-        '--color=yes',
-        '--tb=short',
-        '-p', 'no:cacheprovider',  # Disable cache
-        '--import-mode=importlib',
-    ]
+    # Temporarily rename __init__.py to avoid import issues
+    init_file = Path(__file__).parent / '__init__.py'
+    init_backup = Path(__file__).parent / '__init__.py.bak'
     
-    # Run pytest
-    exit_code = pytest.main(args)
+    if init_file.exists():
+        init_file.rename(init_backup)
     
-    if exit_code == 0:
-        print("\n" + "="*60)
-        print("✓ ALL PYTEST TESTS PASSED")
-        print("="*60)
-    else:
-        print("\n" + "="*60)
-        print("✗ SOME PYTEST TESTS FAILED")
-        print("="*60)
-    
-    return exit_code
+    try:
+        # Configure pytest arguments
+        args = [
+            'tests/',
+            '-v',
+            '--color=yes',
+            '--tb=short',
+            '-p', 'no:cacheprovider',  # Disable cache
+            '--import-mode=importlib',
+        ]
+        
+        # Run pytest
+        exit_code = pytest.main(args)
+        
+        if exit_code == 0:
+            print("\n" + "="*60)
+            print("✓ ALL PYTEST TESTS PASSED")
+            print("="*60)
+        else:
+            print("\n" + "="*60)
+            print("✗ SOME PYTEST TESTS FAILED")
+            print("="*60)
+        
+        return exit_code
+    finally:
+        # Restore __init__.py
+        if init_backup.exists():
+            init_backup.rename(init_file)
 
 if __name__ == "__main__":
     try:

@@ -298,7 +298,7 @@ class TesoteBackend(models.Model):
         log = SyncLog.create_log(self, 'test_connection')
         
         try:
-            from ..components.adapter import TesoteAdapter
+            from components.adapter import TesoteAdapter
             
             # Create adapter instance
             adapter = TesoteAdapter(self)
@@ -413,8 +413,8 @@ class TesoteBackend(models.Model):
         log = SyncLog.create_log(self, 'import_accounts')
         
         try:
-            from ..components.adapter import TesoteAdapter
-            from ..components.importer import TesoteAccountBatchImporter
+            from components.adapter import TesoteAdapter
+            from components.importer import TesoteAccountBatchImporter
             
             # Create adapter and importer
             adapter = TesoteAdapter(self)
@@ -498,7 +498,7 @@ class TesoteBackend(models.Model):
                 total_removed = 0
                 api_calls = 0
                 
-                from ..components.adapter import TesoteAdapter
+                from components.adapter import TesoteAdapter
                 adapter = TesoteAdapter(backend)
                 
                 for account in backend.account_ids:
@@ -595,8 +595,8 @@ class TesoteBackend(models.Model):
                 # Step 1: Import accounts
                 log.update_progress(details='Importing accounts...')
                 
-                from ..components.adapter import TesoteAdapter
-                from ..components.importer import TesoteAccountBatchImporter
+                from components.adapter import TesoteAdapter
+                from components.importer import TesoteAccountBatchImporter
                 
                 adapter = TesoteAdapter(backend)
                 importer = TesoteAccountBatchImporter(new_env, backend.id)
@@ -732,7 +732,7 @@ class TesoteBackend(models.Model):
         total_modified = 0
         total_removed = 0
         
-        from ..components.adapter import TesoteAdapter
+        from components.adapter import TesoteAdapter
         adapter = TesoteAdapter(self)
         
         for account in accounts:

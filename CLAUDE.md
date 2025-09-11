@@ -16,7 +16,7 @@ tesote.com Odoo API Connector - Integration between Odoo 18.0 and tesote.com API
 
 ## Key Components
 
-### API Adapter (`tesote_connector/components/adapter.py`)
+### API Adapter (`components/adapter.py`)
 - Handles all communication with tesote.com API v2
 - Key method: `sync_transactions()` - Uses v2 sync endpoint for cursor-based updates
 - Rate limiting: 200 requests/minute (standard tier)
@@ -40,7 +40,6 @@ The module includes unit tests that can run without Odoo installation by mocking
 
 ```bash
 # Run all tests
-cd tesote_connector
 python3 -m pytest tests/ -v
 
 # Run specific test file

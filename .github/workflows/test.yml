@@ -28,11 +28,10 @@ jobs:
       
       - name: Run tests
         run: |
-          cd tesote_connector
           python3 -m pytest tests/ -v --tb=short || true
       
       - name: Check code structure
         run: |
-          python3 -c "import ast; ast.parse(open('tesote_connector/components/adapter.py').read())"
-          python3 -c "import ast; ast.parse(open('tesote_connector/models/tesote_backend.py').read())"
+          python3 -c "import ast; ast.parse(open('components/adapter.py').read())"
+          python3 -c "import ast; ast.parse(open('models/tesote_backend.py').read())"
           echo "✅ Python syntax valid"

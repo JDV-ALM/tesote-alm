@@ -32,7 +32,7 @@ class TestTesoteAdapterSimple:
     def adapter(self, mock_backend):
         """Create adapter instance with mock backend."""
         # Import after mocks are set up
-        from ..components.adapter import TesoteAdapter
+        from components.adapter import TesoteAdapter
         return TesoteAdapter(mock_backend)
     
     def test_adapter_initialization(self, adapter, mock_backend):
