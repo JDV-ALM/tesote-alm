@@ -16,6 +16,14 @@ Odoo 18.0 connector for **tesote.com API v2.0.0** - Real-time financial data syn
 - Python packages: `requests`
 - Docker and Docker Compose (for local development)
 
+## Compatibility
+
+**Currently supported deployment methods:**
+- **Self-hosted Odoo** - Full support for on-premise installations
+- **Odoo.sh** - Compatible with Odoo.sh cloud platform
+
+> **Note**: This module currently works only with self-hosted Odoo installations or Odoo.sh deployments. Support for Odoo Online (SaaS) is not yet available.
+
 ## Quick Start with Docker
 
 ### 1. Start the Docker environment
@@ -39,16 +47,68 @@ Or manually through Odoo:
 2. Search for "tesote.com Connector"
 3. Click Install
 
-## Manual Installation
+## Installation on Self-Hosted Odoo
 
-1. Install Python dependencies:
+### Prerequisites
+1. Access to your Odoo server with admin privileges
+2. Ability to add custom modules to your addons path
+3. Python dependencies management access
+
+### Installation Steps
+
+1. **Clone or download this repository** to your server:
+```bash
+git clone https://github.com/tesote/tesote-odoo-api-connector.git
+cd tesote-odoo-api-connector
+```
+
+2. **Install Python dependencies**:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Copy `tesote_connector` module to your Odoo addons path
+3. **Copy the module** to your Odoo addons directory:
+```bash
+# Example for typical Odoo installation
+cp -r tesote_connector /opt/odoo/addons/
+# Or add to your custom addons path
+cp -r tesote_connector /path/to/your/custom-addons/
+```
 
-3. Update Odoo module list and install "tesote.com Connector"
+4. **Update Odoo configuration** to include the addons path (if using custom path):
+```ini
+# In your odoo.conf file
+addons_path = /opt/odoo/addons,/path/to/your/custom-addons
+```
+
+5. **Restart Odoo service**:
+```bash
+sudo systemctl restart odoo
+# Or if using custom service name
+sudo systemctl restart odoo18
+```
+
+6. **Install the module** in Odoo:
+   - Login to Odoo with administrator account
+   - Go to **Apps** menu
+   - Click **Update Apps List**
+   - Search for "tesote.com Connector"
+   - Click **Install**
+
+### Installation on Odoo.sh
+
+1. **Add the module** to your project repository:
+   - Add `tesote_connector` folder to your project's addons directory
+   - Commit and push to your Odoo.sh repository
+
+2. **Install dependencies**:
+   - Add `requests` to your `requirements.txt` file in the project root
+   - Commit and push the changes
+
+3. **Deploy and install**:
+   - Deploy changes to your Odoo.sh branch
+   - Go to Apps → Update Apps List
+   - Search and install "tesote.com Connector"
 
 ## Configuration
 
