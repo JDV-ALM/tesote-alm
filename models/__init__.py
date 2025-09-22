@@ -8,3 +8,5 @@ from . import tesote_transaction  # noqa: F401
 from . import tesote_sync_log  # noqa: F401
 from . import tesote_webhook_config  # noqa: F401
 from . import tesote_webhook_event  # noqa: F401
+from . import tesote_webhook_event_type  # noqa: F401
+from . import tesote_webhook_monitor  # noqa: F401

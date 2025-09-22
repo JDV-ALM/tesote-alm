@@ -7,3 +7,11 @@ access_tesote_transaction_user,tesote.transaction.user,model_tesote_transaction,
 access_tesote_transaction_manager,tesote.transaction.manager,model_tesote_transaction,account.group_account_manager,1,1,1,1
 access_tesote_sync_log_user,tesote.sync.log.user,model_tesote_sync_log,base.group_user,1,1,1,0
 access_tesote_sync_log_manager,tesote.sync.log.manager,model_tesote_sync_log,account.group_account_manager,1,1,1,1
+access_tesote_webhook_config_user,tesote.webhook.config.user,model_tesote_webhook_config,base.group_user,1,0,0,0
+access_tesote_webhook_config_manager,tesote.webhook.config.manager,model_tesote_webhook_config,account.group_account_manager,1,1,1,1
+access_tesote_webhook_event_user,tesote.webhook.event.user,model_tesote_webhook_event,base.group_user,1,0,0,0
+access_tesote_webhook_event_manager,tesote.webhook.event.manager,model_tesote_webhook_event,account.group_account_manager,1,1,1,1
+access_tesote_webhook_event_type_user,tesote.webhook.event.type.user,model_tesote_webhook_event_type,base.group_user,1,0,0,0
+access_tesote_webhook_event_type_manager,tesote.webhook.event.type.manager,model_tesote_webhook_event_type,account.group_account_manager,1,1,1,1
+access_tesote_webhook_monitor_user,tesote.webhook.monitor.user,model_tesote_webhook_monitor,base.group_user,1,0,0,0
+access_tesote_webhook_monitor_manager,tesote.webhook.monitor.manager,model_tesote_webhook_monitor,account.group_account_manager,1,1,1,1

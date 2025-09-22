@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Tree View for Webhook Events -->
+    <record id="tesote_webhook_event_tree" model="ir.ui.view">
+        <field name="name">tesote.webhook.event.tree</field>
+        <field name="model">tesote.webhook.event</field>
+        <field name="arch" type="xml">
+            <tree string="Webhook Events" default_order="received_at desc" create="false" edit="false">
+                <field name="event_id"/>
+                <field name="event_type"/>
+                <field name="status" decoration-success="status == 'completed'" decoration-warning="status == 'processing'" decoration-danger="status == 'failed'" decoration-info="status == 'pending'"/>
+                <field name="received_at"/>
+                <field name="processed_at"/>
+                <field name="processing_duration" string="Duration (ms)"/>
+                <field name="retry_count" decoration-warning="retry_count > 0"/>
+                <button name="action_retry" type="object" string="Retry" icon="fa-refresh" attrs="{'invisible': [('status', '!=', 'failed')]}" class="btn-sm"/>
+                <button name="action_view_payload" type="object" string="View Payload" icon="fa-eye" class="btn-sm"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View for Webhook Events -->
+    <record id="tesote_webhook_event_form" model="ir.ui.view">
+        <field name="name">tesote.webhook.event.form</field>
+        <field name="model">tesote.webhook.event</field>
+        <field name="arch" type="xml">
+            <form string="Webhook Event" edit="false" create="false">
+                <header>
+                    <button name="action_retry" type="object" string="Retry Processing" class="btn-primary" attrs="{'invisible': [('status', '!=', 'failed')]}"/>
+                    <button name="action_mark_completed" type="object" string="Mark as Completed" confirm="Are you sure you want to manually mark this event as completed?" attrs="{'invisible': [('status', 'in', ['completed', 'processing'])]}"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,processing,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="event_id" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="event_type" readonly="1" widget="badge"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Event Information">
+                            <field name="webhook_config_id" readonly="1"/>
+                            <field name="timestamp" readonly="1"/>
+                            <field name="received_at" readonly="1"/>
+                            <field name="processed_at" readonly="1"/>
+                            <field name="processing_duration" readonly="1" string="Duration (ms)"/>
+                        </group>
+                        <group string="Processing Status">
+                            <field name="status" readonly="1"/>
+                            <field name="retry_count" readonly="1"/>
+                            <field name="sync_job_id" readonly="1" attrs="{'invisible': [('sync_job_id', '=', False)]}"/>
+                            <field name="error_message" readonly="1" attrs="{'invisible': [('error_message', '=', False)]}" widget="text"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload" readonly="1" widget="json"/>
+                        </page>
+                        <page string="Headers">
+                            <field name="headers" readonly="1" widget="json"/>
+                        </page>
+                        <page string="Signature Verification">
+                            <group>
+                                <field name="signature" readonly="1"/>
+                                <field name="signature_valid" readonly="1"/>
+                                <field name="signature_error" readonly="1" attrs="{'invisible': [('signature_valid', '=', True)]}"/>
+                            </group>
+                        </page>
+                        <page string="Processing Log">
+                            <field name="processing_log" readonly="1" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View for Webhook Events Dashboard -->
+    <record id="tesote_webhook_event_kanban" model="ir.ui.view">
+        <field name="name">tesote.webhook.event.kanban</field>
+        <field name="model">tesote.webhook.event</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status" default_order="received_at desc" quick_create="false" create="false">
+                <field name="event_id"/>
+                <field name="event_type"/>
+                <field name="status"/>
+                <field name="received_at"/>
+                <field name="processing_duration"/>
+                <field name="error_message"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <strong class="o_kanban_record_title">
+                                    <field name="event_id"/>
+                                </strong>
+                                <div class="text-muted">
+                                    <i class="fa fa-tag"/> <field name="event_type"/>
+                                </div>
+                                <div class="text-muted">
+                                    <i class="fa fa-clock-o"/> <field name="received_at"/>
+                                </div>
+                                <div t-if="record.processing_duration.raw_value">
+                                    <i class="fa fa-tachometer"/> <field name="processing_duration"/> ms
+                                </div>
+                                <div t-if="record.error_message.raw_value" class="text-danger">
+                                    <i class="fa fa-exclamation-triangle"/> Error occurred
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Graph View for Analytics -->
+    <record id="tesote_webhook_event_graph" model="ir.ui.view">
+        <field name="name">tesote.webhook.event.graph</field>
+        <field name="model">tesote.webhook.event</field>
+        <field name="arch" type="xml">
+            <graph string="Webhook Events Analytics" type="bar" stacked="True">
+                <field name="event_type" type="row"/>
+                <field name="status" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot View for Detailed Analytics -->
+    <record id="tesote_webhook_event_pivot" model="ir.ui.view">
+        <field name="name">tesote.webhook.event.pivot</field>
+        <field name="model">tesote.webhook.event</field>
+        <field name="arch" type="xml">
+            <pivot string="Webhook Events Analysis">
+                <field name="event_type" type="row"/>
+                <field name="status" type="col"/>
+                <field name="processing_duration" type="measure" widget="float_time"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search View for Webhook Events -->
+    <record id="tesote_webhook_event_search" model="ir.ui.view">
+        <field name="name">tesote.webhook.event.search</field>
+        <field name="model">tesote.webhook.event</field>
+        <field name="arch" type="xml">
+            <search string="Search Webhook Events">
+                <field name="event_id"/>
+                <field name="event_type"/>
+                <field name="status"/>
+                <filter name="today" string="Today" domain="[('received_at', '>=', datetime.datetime.now().replace(hour=0, minute=0, second=0))]"/>
+                <filter name="last_7_days" string="Last 7 Days" domain="[('received_at', '>=', (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="pending" string="Pending" domain="[('status', '=', 'pending')]"/>
+                <filter name="processing" string="Processing" domain="[('status', '=', 'processing')]"/>
+                <filter name="completed" string="Completed" domain="[('status', '=', 'completed')]"/>
+                <filter name="failed" string="Failed" domain="[('status', '=', 'failed')]"/>
+                <separator/>
+                <filter name="has_errors" string="Has Errors" domain="[('error_message', '!=', False)]"/>
+                <filter name="retried" string="Retried" domain="[('retry_count', '>', 0)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_by_type" string="Event Type" context="{'group_by': 'event_type'}"/>
+                    <filter name="group_by_date" string="Date" context="{'group_by': 'received_at:day'}"/>
+                    <filter name="group_by_hour" string="Hour" context="{'group_by': 'received_at:hour'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_tesote_webhook_event_dashboard" model="ir.actions.act_window">
+        <field name="name">Webhook Events Dashboard</field>
+        <field name="res_model">tesote.webhook.event</field>
+        <field name="view_mode">kanban,tree,form,graph,pivot</field>
+        <field name="context">{'search_default_last_7_days': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No webhook events received yet
+            </p>
+            <p>
+                Webhook events will appear here once tesote.com starts sending notifications to your Odoo instance.
+            </p>
+        </field>
+    </record>
+
+    <!-- Recent Events Action -->
+    <record id="action_tesote_webhook_event_recent" model="ir.actions.act_window">
+        <field name="name">Recent Webhook Events</field>
+        <field name="res_model">tesote.webhook.event</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('received_at', '>=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]</field>
+        <field name="context">{'search_default_group_by_status': 1}</field>
+    </record>
+
+    <!-- Failed Events Action -->
+    <record id="action_tesote_webhook_event_failed" model="ir.actions.act_window">
+        <field name="name">Failed Webhook Events</field>
+        <field name="res_model">tesote.webhook.event</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('status', '=', 'failed')]</field>
+        <field name="context">{'search_default_last_7_days': 1}</field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_tesote_webhook"
+              parent="menu_tesote_root"
+              name="Webhooks"
+              sequence="40"
+              groups="connector.group_connector_manager"/>
+
+    <menuitem id="menu_tesote_webhook_events"
+              parent="menu_tesote_webhook"
+              action="action_tesote_webhook_event_dashboard"
+              name="Events Dashboard"
+              sequence="10"/>
+
+    <menuitem id="menu_tesote_webhook_recent"
+              parent="menu_tesote_webhook"
+              action="action_tesote_webhook_event_recent"
+              name="Recent Events"
+              sequence="20"/>
+
+    <menuitem id="menu_tesote_webhook_failed"
+              parent="menu_tesote_webhook"
+              action="action_tesote_webhook_event_failed"
+              name="Failed Events"
+              sequence="30"/>
+</odoo>

@@ -37,7 +37,7 @@ class TesoteWebhookConfig(models.Model):
         default=False,
         help='Enable webhook processing'
     )
-    
+
     # Event subscriptions
     subscribe_sync_updates = fields.Boolean(
         string='Sync Updates Available',
@@ -64,7 +64,7 @@ class TesoteWebhookConfig(models.Model):
         default=False,
         help='Subscribe to transactions.updated events'
     )
-    
+
     # Monitoring fields
     last_webhook_at = fields.Datetime(
         string='Last Webhook Received',
@@ -82,6 +82,84 @@ class TesoteWebhookConfig(models.Model):
         default=0,
         readonly=True,
         help='Number of signature verification failures'
+    )
+
+    # Additional fields for UI views
+    webhook_path = fields.Char(
+        string='Webhook Path',
+        default='/tesote/webhook',
+        readonly=True
+    )
+    active_events = fields.Many2many(
+        'tesote.webhook.event.type',
+        string='Active Events',
+        compute='_compute_active_events'
+    )
+    last_verified = fields.Datetime(
+        string='Last Verified',
+        readonly=True
+    )
+    verification_status = fields.Selection([
+        ('pending', 'Pending'),
+        ('verified', 'Verified'),
+        ('failed', 'Failed')
+    ], string='Verification Status', default='pending')
+    last_error = fields.Text(
+        string='Last Error',
+        readonly=True
+    )
+    total_received = fields.Integer(
+        string='Total Received',
+        compute='_compute_stats'
+    )
+    total_processed = fields.Integer(
+        string='Total Processed',
+        compute='_compute_stats'
+    )
+    total_failed = fields.Integer(
+        string='Total Failed',
+        compute='_compute_stats'
+    )
+    success_rate = fields.Float(
+        string='Success Rate',
+        compute='_compute_stats'
+    )
+    recent_webhook_events = fields.One2many(
+        'tesote.webhook.event',
+        'webhook_config_id',
+        string='Recent Events',
+        limit=10
+    )
+
+    # Alert configuration
+    alert_on_failure = fields.Boolean(
+        string='Alert on Failure',
+        default=False,
+        help='Send email alerts when webhook failures exceed threshold'
+    )
+    alert_threshold = fields.Float(
+        string='Alert Threshold (%)',
+        default=10.0,
+        help='Failure rate percentage that triggers alerts'
+    )
+    alert_email_to = fields.Char(
+        string='Alert Email To',
+        help='Email address to send alerts to'
+    )
+
+    # Retry configuration
+    retry_max_attempts = fields.Integer(
+        string='Max Retry Attempts',
+        default=3
+    )
+    retry_backoff_base = fields.Float(
+        string='Retry Backoff Base',
+        default=2.0,
+        help='Base for exponential backoff (seconds)'
+    )
+    timeout_seconds = fields.Integer(
+        string='Timeout (seconds)',
+        default=30
     )
 
     _sql_constraints = [
@@ -139,34 +217,34 @@ class TesoteWebhookConfig(models.Model):
     def verify_signature(self, payload, timestamp, signature):
         """Verify webhook signature using HMAC-SHA256."""
         self.ensure_one()
-        
+
         if not self.secret_key:
             _logger.error("No secret key configured for webhook verification")
             self.failed_signature_count += 1
             return False
-        
+
         try:
             # Construct the signed payload
             if isinstance(payload, bytes):
                 payload = payload.decode('utf-8')
             signed_payload = f"{timestamp}.{payload}"
-            
+
             # Calculate expected signature
             expected = hmac.new(
                 self.secret_key.encode('utf-8'),
                 signed_payload.encode('utf-8'),
                 hashlib.sha256
             ).hexdigest()
-            
+
             # Compare signatures securely
             is_valid = hmac.compare_digest(expected, signature)
-            
+
             if not is_valid:
                 self.failed_signature_count += 1
                 _logger.warning(f"Webhook signature verification failed for backend {self.backend_id.name}")
-            
+
             return is_valid
-            
+
         except Exception as e:
             _logger.error(f"Error verifying webhook signature: {e}")
             self.failed_signature_count += 1
@@ -183,10 +261,10 @@ class TesoteWebhookConfig(models.Model):
         self.ensure_one()
         if not self.enabled:
             raise UserError(_('Please enable webhook configuration first'))
-        
+
         # This would typically make an API call to tesote.com to trigger a test webhook
         _logger.info(f"Testing webhook configuration for backend {self.backend_id.name}")
-        
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -204,3 +282,101 @@ class TesoteWebhookConfig(models.Model):
         if not config:
             _logger.debug(f"No webhook configuration found for backend {backend_id}")
         return config
+
+    @api.depends('subscribe_sync_updates', 'subscribe_account_created',
+                 'subscribe_account_updated', 'subscribe_transaction_created',
+                 'subscribe_transaction_updated')
+    def _compute_active_events(self):
+        """Compute active events based on subscription flags."""
+        EventType = self.env['tesote.webhook.event.type']
+        for record in self:
+            event_names = record.get_active_events()
+            # Create event type records if they don't exist
+            events = EventType
+            for name in event_names:
+                event = EventType.search([('name', '=', name)], limit=1)
+                if not event:
+                    event = EventType.create({'name': name})
+                events |= event
+            record.active_events = events
+
+    @api.depends('backend_id')
+    def _compute_stats(self):
+        """Compute webhook statistics."""
+        for record in self:
+            events = self.env['tesote.webhook.event'].search([
+                ('webhook_config_id', '=', record.id)
+            ])
+            record.total_received = len(events)
+            record.total_processed = len(events.filtered(lambda e: e.status == 'completed'))
+            record.total_failed = len(events.filtered(lambda e: e.status == 'failed'))
+
+            if record.total_received > 0:
+                record.success_rate = (record.total_processed / record.total_received) * 100
+            else:
+                record.success_rate = 0.0
+
+    def action_test_webhook(self):
+        """Test webhook configuration."""
+        self.ensure_one()
+        return self.test_webhook_connection()
+
+    def action_verify_signature(self):
+        """Verify webhook signature configuration."""
+        self.ensure_one()
+
+        # Create a test payload and verify signature
+        import time
+        import json
+
+        test_payload = json.dumps({
+            'test': True,
+            'timestamp': time.time()
+        })
+        timestamp = str(int(time.time()))
+
+        # Generate signature
+        signed_payload = f"{timestamp}.{test_payload}"
+        test_signature = hmac.new(
+            self.secret_key.encode('utf-8'),
+            signed_payload.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+
+        # Verify signature
+        if self.verify_signature(test_payload, timestamp, test_signature):
+            self.verification_status = 'verified'
+            self.last_verified = fields.Datetime.now()
+            message = _('Signature verification successful')
+            msg_type = 'success'
+        else:
+            self.verification_status = 'failed'
+            self.last_error = _('Signature verification failed')
+            message = _('Signature verification failed')
+            msg_type = 'warning'
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Signature Verification'),
+                'message': message,
+                'type': msg_type,
+                'sticky': False,
+            }
+        }
+
+    def action_regenerate_secret(self):
+        """Regenerate webhook secret key."""
+        self.ensure_one()
+        self.regenerate_secret_key()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Secret Regenerated'),
+                'message': _('Webhook secret key has been regenerated successfully'),
+                'type': 'info',
+                'sticky': False,
+            }
+        }
