@@ -6,10 +6,7 @@
             <field name="name">Tesote: Check Webhook Alerts</field>
             <field name="model_id" ref="model_tesote_webhook_monitor"/>
             <field name="state">code</field>
-            <field name="code">monitor = env['tesote.webhook.monitor']
-alerts = monitor.check_alert_conditions()
-if alerts:
-    monitor.send_alert_notifications(alerts)</field>
+            <field name="code">env['tesote.webhook.monitor'].check_alert_conditions()</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">1</field>
             <field name="interval_type">hours</field>
@@ -22,10 +19,7 @@ if alerts:
             <field name="model_id" ref="model_tesote_webhook_monitor"/>
             <field name="state">code</field>
             <field name="code">monitor = env['tesote.webhook.monitor']
-report = monitor.generate_daily_report()
-if report:
-    # Log the report
-    env.context.get('logger', lambda x: None)("Daily webhook report generated")</field>
+report = monitor.generate_daily_report()</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
@@ -37,13 +31,8 @@ if report:
             <field name="name">Tesote: Cleanup Old Webhook Data</field>
             <field name="model_id" ref="model_tesote_webhook_monitor"/>
             <field name="state">code</field>
-            <field name="code"># Cleanup old monitor and event records
-monitor = env['tesote.webhook.monitor']
-monitor.cleanup_old_monitors(days=90)
-
-# Cleanup old webhook events using relative date
-webhook_events = env['tesote.webhook.event']
-webhook_events.cleanup_old_events(days=90)</field>
+            <field name="code">env['tesote.webhook.monitor'].cleanup_old_monitors(days=90)
+env['tesote.webhook.event'].cleanup_old_events(days=90)</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">7</field>
             <field name="interval_type">days</field>
@@ -55,9 +44,7 @@ webhook_events.cleanup_old_events(days=90)</field>
             <field name="name">Tesote: Update Webhook Metrics</field>
             <field name="model_id" ref="model_tesote_webhook_event"/>
             <field name="state">code</field>
-            <field name="code"># Update metrics for recent webhook events
-monitor = env['tesote.webhook.monitor']
-monitor.update_recent_metrics()</field>
+            <field name="code">env['tesote.webhook.monitor'].update_recent_metrics()</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
