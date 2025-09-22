@@ -19,10 +19,12 @@ sys.modules['odoo.api'] = MagicMock()
 sys.modules['odoo.tools'] = MagicMock()
 sys.modules['odoo.http'] = MagicMock()
 
+
 # Create mock classes
 class MockModel:
     """Mock Odoo Model class."""
     pass
+
 
 class MockFields:
     """Mock Odoo Fields."""
@@ -37,42 +39,47 @@ class MockFields:
     Many2one = MagicMock()
     One2many = MagicMock()
     Many2many = MagicMock()
+    Html = MagicMock()
+
 
 class MockApi:
     """Mock Odoo API decorators."""
     @staticmethod
     def model(func):
         return func
-    
+
     @staticmethod
     def model_create_multi(func):
         return func
-    
+
     @staticmethod
     def depends(*args):
         def decorator(func):
             return func
         return decorator
-    
+
     @staticmethod
     def constrains(*args):
         def decorator(func):
             return func
         return decorator
 
+
 class MockUserError(Exception):
     """Mock UserError exception."""
     pass
 
+
 class MockHttp:
     """Mock Odoo HTTP module."""
     Controller = object
-    
+
     @staticmethod
     def route(*args, **kwargs):
         def decorator(func):
             return func
         return decorator
+
 
 # Set up the mocks
 sys.modules['odoo'].models.Model = MockModel
@@ -81,9 +88,11 @@ sys.modules['odoo'].api = MockApi()
 sys.modules['odoo.exceptions'].UserError = MockUserError
 sys.modules['odoo'].http = MockHttp()
 
+
 # Mock the translation function
 def mock_translate(text):
     """Mock translation function."""
     return text
+
 
 sys.modules['odoo']._ = mock_translate

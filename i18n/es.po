@@ -331,3 +331,219 @@ msgstr "Cuentas de Tesote"
 #, python-format
 msgid "Account synchronized successfully"
 msgstr "Cuenta sincronizada exitosamente"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Webhook Configuration"
+msgstr "Configuración de Webhooks"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Test Webhook"
+msgstr "Probar Webhook"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Verify Signature"
+msgstr "Verificar Firma"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Regenerate Secret"
+msgstr "Regenerar Secreto"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Show Configuration"
+msgstr "Mostrar Configuración"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Endpoint Configuration"
+msgstr "Configuración de Endpoint"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Event Subscriptions"
+msgstr "Suscripciones de Eventos"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Verification Status"
+msgstr "Estado de Verificación"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Statistics"
+msgstr "Estadísticas"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Configuration Details"
+msgstr "Detalles de Configuración"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Recent Events"
+msgstr "Eventos Recientes"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_form
+msgid "Monitoring Alerts"
+msgstr "Alertas de Monitoreo"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Search Webhook Configurations"
+msgstr "Buscar Configuraciones de Webhook"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Enabled"
+msgstr "Habilitado"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Disabled"
+msgstr "Deshabilitado"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Verified"
+msgstr "Verificado"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Failed"
+msgstr "Fallido"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Group By"
+msgstr "Agrupar Por"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Backend"
+msgstr "Backend"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_config_search
+msgid "Status"
+msgstr "Estado"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_secret_wizard_form
+msgid "Webhook Secret Key"
+msgstr "Clave Secreta del Webhook"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_secret_wizard_form
+msgid "Webhook Endpoint"
+msgstr "Endpoint del Webhook"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_secret_wizard_form
+msgid "Authentication"
+msgstr "Autenticación"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.tesote_webhook_secret_wizard_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Only one webhook configuration is allowed. Please edit the existing configuration."
+msgstr "Solo se permite una configuración de webhook. Por favor edite la configuración existente."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "No backend configuration found. Please configure the backend first."
+msgstr "No se encontró configuración de backend. Por favor configure el backend primero."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Please enable webhook configuration first"
+msgstr "Por favor habilite la configuración de webhook primero"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Webhook Test"
+msgstr "Prueba de Webhook"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Test webhook event created successfully! Check the webhook events for results."
+msgstr "¡Evento de prueba de webhook creado exitosamente! Revise los eventos de webhook para ver los resultados."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature verification successful"
+msgstr "Verificación de firma exitosa"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature verification failed"
+msgstr "Verificación de firma fallida"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature Verification"
+msgstr "Verificación de Firma"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Secret Regenerated"
+msgstr "Secreto Regenerado"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Webhook secret key has been regenerated successfully"
+msgstr "La clave secreta del webhook ha sido regenerada exitosamente"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Webhook Configuration Details"
+msgstr "Detalles de Configuración del Webhook"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_event.py:0
+#, python-format
+msgid "Can only retry failed webhook events"
+msgstr "Solo se pueden reintentar eventos de webhook fallidos"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_event.py:0
+#, python-format
+msgid "Only failed events can be retried"
+msgstr "Solo se pueden reintentar eventos fallidos"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_event.py:0
+#, python-format
+msgid "Webhook Payload"
+msgstr "Carga Útil del Webhook"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_event.py:0
+#, python-format
+msgid "Event Marked as Completed"
+msgstr "Evento Marcado como Completado"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_event.py:0
+#, python-format
+msgid "The webhook event has been manually marked as completed"
+msgstr "El evento de webhook ha sido marcado manualmente como completado"
