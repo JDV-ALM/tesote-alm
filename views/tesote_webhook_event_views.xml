@@ -5,7 +5,7 @@
         <field name="name">tesote.webhook.event.tree</field>
         <field name="model">tesote.webhook.event</field>
         <field name="arch" type="xml">
-            <tree string="Webhook Events" default_order="received_at desc" create="false" edit="false">
+            <list string="Webhook Events" default_order="received_at desc" create="false" edit="false">
                 <field name="event_id"/>
                 <field name="event_type"/>
                 <field name="status" decoration-success="status == 'completed'" decoration-warning="status == 'processing'" decoration-danger="status == 'failed'" decoration-info="status == 'pending'"/>
@@ -13,9 +13,9 @@
                 <field name="processed_at"/>
                 <field name="processing_duration" string="Duration (ms)"/>
                 <field name="retry_count" decoration-warning="retry_count > 0"/>
-                <button name="action_retry" type="object" string="Retry" icon="fa-refresh" attrs="{'invisible': [('status', '!=', 'failed')]}" class="btn-sm"/>
+                <button name="action_retry" type="object" string="Retry" icon="fa-refresh" invisible="status != 'failed'" class="btn-sm"/>
                 <button name="action_view_payload" type="object" string="View Payload" icon="fa-eye" class="btn-sm"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -26,8 +26,8 @@
         <field name="arch" type="xml">
             <form string="Webhook Event" edit="false" create="false">
                 <header>
-                    <button name="action_retry" type="object" string="Retry Processing" class="btn-primary" attrs="{'invisible': [('status', '!=', 'failed')]}"/>
-                    <button name="action_mark_completed" type="object" string="Mark as Completed" confirm="Are you sure you want to manually mark this event as completed?" attrs="{'invisible': [('status', 'in', ['completed', 'processing'])]}"/>
+                    <button name="action_retry" type="object" string="Retry Processing" class="btn-primary" invisible="status != 'failed'"/>
+                    <button name="action_mark_completed" type="object" string="Mark as Completed" confirm="Are you sure you want to manually mark this event as completed?" invisible="status in ('completed', 'processing')"/>
                     <field name="status" widget="statusbar" statusbar_visible="pending,processing,completed"/>
                 </header>
                 <sheet>
@@ -50,8 +50,8 @@
                         <group string="Processing Status">
                             <field name="status" readonly="1"/>
                             <field name="retry_count" readonly="1"/>
-                            <field name="sync_job_id" readonly="1" attrs="{'invisible': [('sync_job_id', '=', False)]}"/>
-                            <field name="error_message" readonly="1" attrs="{'invisible': [('error_message', '=', False)]}" widget="text"/>
+                            <field name="sync_job_id" readonly="1" invisible="sync_job_id == False"/>
+                            <field name="error_message" readonly="1" invisible="error_message == False" widget="text"/>
                         </group>
                     </group>
                     <notebook>
@@ -65,7 +65,7 @@
                             <group>
                                 <field name="signature" readonly="1"/>
                                 <field name="signature_valid" readonly="1"/>
-                                <field name="signature_error" readonly="1" attrs="{'invisible': [('signature_valid', '=', True)]}"/>
+                                <field name="signature_error" readonly="1" invisible="signature_valid == True"/>
                             </group>
                         </page>
                         <page string="Processing Log">
@@ -178,7 +178,7 @@
     <record id="action_tesote_webhook_event_dashboard" model="ir.actions.act_window">
         <field name="name">Webhook Events Dashboard</field>
         <field name="res_model">tesote.webhook.event</field>
-        <field name="view_mode">kanban,tree,form,graph,pivot</field>
+        <field name="view_mode">kanban,list,form,graph,pivot</field>
         <field name="context">{'search_default_last_7_days': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -194,7 +194,7 @@
     <record id="action_tesote_webhook_event_recent" model="ir.actions.act_window">
         <field name="name">Recent Webhook Events</field>
         <field name="res_model">tesote.webhook.event</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="domain">[('received_at', '>=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]</field>
         <field name="context">{'search_default_group_by_status': 1}</field>
     </record>
@@ -203,7 +203,7 @@
     <record id="action_tesote_webhook_event_failed" model="ir.actions.act_window">
         <field name="name">Failed Webhook Events</field>
         <field name="res_model">tesote.webhook.event</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="domain">[('status', '=', 'failed')]</field>
         <field name="context">{'search_default_last_7_days': 1}</field>
     </record>
@@ -213,7 +213,7 @@
               parent="menu_tesote_root"
               name="Webhooks"
               sequence="40"
-              groups="connector.group_connector_manager"/>
+              groups="account.group_account_manager"/>
 
     <menuitem id="menu_tesote_webhook_events"
               parent="menu_tesote_webhook"

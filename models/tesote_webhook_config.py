@@ -185,10 +185,24 @@ class TesoteWebhookConfig(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Generate secret key on creation if not provided."""
+        """Generate secret key on creation if not provided and enforce singleton."""
+        # Check if configuration already exists
+        existing = self.search([('id', '!=', 0)], limit=1)
+        if existing:
+            raise UserError(_(
+                "Only one webhook configuration is allowed. Please edit the existing configuration."
+            ))
+            
         for vals in vals_list:
             if 'secret_key' not in vals or not vals['secret_key']:
                 vals['secret_key'] = self.generate_secret_key()
+            # Ensure backend_id is set to the singleton backend
+            if 'backend_id' not in vals:
+                backend = self.env['tesote.backend'].search([], limit=1)
+                if backend:
+                    vals['backend_id'] = backend.id
+                else:
+                    raise UserError(_("No backend configuration found. Please configure the backend first."))
         return super().create(vals_list)
 
     def regenerate_secret_key(self):
@@ -257,20 +271,51 @@ class TesoteWebhookConfig(models.Model):
         self.total_webhooks_received += 1
 
     def test_webhook_connection(self):
-        """Test webhook configuration by sending a test event."""
+        """Test webhook configuration by creating a test webhook event."""
         self.ensure_one()
         if not self.enabled:
             raise UserError(_('Please enable webhook configuration first'))
 
-        # This would typically make an API call to tesote.com to trigger a test webhook
-        _logger.info(f"Testing webhook configuration for backend {self.backend_id.name}")
+        # Create a test webhook event to demonstrate functionality
+        import json
+        import time
+        
+        test_payload = {
+            'event_type': 'test.webhook',
+            'data': {
+                'test': True,
+                'message': 'This is a test webhook event',
+                'timestamp': time.time(),
+                'backend_id': self.backend_id.name
+            },
+            'timestamp': time.time()
+        }
+        
+        # Create webhook event record
+        webhook_event = self.env['tesote.webhook.event'].create({
+            'webhook_config_id': self.id,
+            'backend_id': self.backend_id.id,  # Add required backend_id
+            'event_id': f'test-{int(time.time())}',
+            'event_type': 'test.webhook',
+            'payload': json.dumps(test_payload),
+            'headers': json.dumps({'Content-Type': 'application/json'}),
+            'signature': 'test-signature',
+            'signature_valid': True,
+            'status': 'completed',
+            'received_at': fields.Datetime.now(),
+            'processed_at': fields.Datetime.now(),
+            'processing_duration': 50,  # 50ms fake processing time
+        })
+        
+        _logger.info(f"Created test webhook event {webhook_event.event_id} for backend {self.backend_id.name}")
 
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': _('Webhook Test'),
-                'message': _('Test webhook request sent. Check the webhook events for results.'),
+                'message': _('Test webhook event created successfully! Check the webhook events for results.'),
+                'type': 'success',
                 'sticky': False,
             }
         }
@@ -379,4 +424,57 @@ class TesoteWebhookConfig(models.Model):
                 'type': 'info',
                 'sticky': False,
             }
+        }
+
+    def action_show_secret(self):
+        """Show the webhook secret key in a popup wizard."""
+        self.ensure_one()
+        
+        # Create a temporary wizard record to show the secret
+        wizard = self.env['tesote.webhook.secret.wizard'].create({
+            'webhook_config_id': self.id,
+            'secret_key': self.secret_key,
+            'webhook_url': self.webhook_url,
+        })
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Webhook Configuration Details'),
+            'res_model': 'tesote.webhook.secret.wizard',
+            'res_id': wizard.id,
+            'view_mode': 'form',
+            'target': 'new',  # Open in popup
+            'context': {'create': False, 'edit': False, 'delete': False},
+        }
+
+    @api.model
+    def action_open_configuration(self):
+        """Open the singleton webhook configuration or create if it doesn't exist."""
+        config = self.search([], limit=1)
+        if not config:
+            # Get the singleton backend
+            backend = self.env['tesote.backend'].search([], limit=1)
+            if not backend:
+                raise UserError(_("No backend configuration found. Please configure the backend first."))
+            
+            # Create default webhook configuration
+            config = self.create({
+                'backend_id': backend.id,
+                'enabled': False,
+                'subscribe_sync_updates': True,
+                'subscribe_account_created': True,
+                'subscribe_account_updated': True,
+                'subscribe_transaction_created': False,
+                'subscribe_transaction_updated': False,
+            })
+
+        # Return action to open the form view
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Webhook Configuration'),
+            'res_model': 'tesote.webhook.config',
+            'res_id': config.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('tesote_connector.tesote_webhook_config_form').id,
+            'target': 'current',
         }

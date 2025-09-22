@@ -53,6 +53,7 @@ Technical Highlights:
         "views/tesote_sync_log_views.xml",
         "views/tesote_webhook_config_views.xml",
         "views/tesote_webhook_event_views.xml",
+        "views/tesote_webhook_secret_wizard_views.xml",
         "views/tesote_menu.xml",
     ],
     "images": [

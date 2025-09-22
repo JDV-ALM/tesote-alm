@@ -15,3 +15,5 @@ access_tesote_webhook_event_type_user,tesote.webhook.event.type.user,model_tesot
 access_tesote_webhook_event_type_manager,tesote.webhook.event.type.manager,model_tesote_webhook_event_type,account.group_account_manager,1,1,1,1
 access_tesote_webhook_monitor_user,tesote.webhook.monitor.user,model_tesote_webhook_monitor,base.group_user,1,0,0,0
 access_tesote_webhook_monitor_manager,tesote.webhook.monitor.manager,model_tesote_webhook_monitor,account.group_account_manager,1,1,1,1
+access_tesote_webhook_secret_wizard_user,tesote.webhook.secret.wizard.user,model_tesote_webhook_secret_wizard,base.group_user,1,1,1,1
+access_tesote_webhook_secret_wizard_manager,tesote.webhook.secret.wizard.manager,model_tesote_webhook_secret_wizard,account.group_account_manager,1,1,1,1

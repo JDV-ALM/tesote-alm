@@ -5,13 +5,13 @@
         <field name="name">tesote.webhook.config.tree</field>
         <field name="model">tesote.webhook.config</field>
         <field name="arch" type="xml">
-            <tree string="Webhook Configurations" create="false" delete="false">
+            <list string="Webhook Configurations" create="false" delete="false">
                 <field name="backend_id"/>
                 <field name="webhook_url"/>
                 <field name="enabled" widget="boolean_toggle"/>
                 <field name="active_events" widget="many2many_tags"/>
                 <field name="last_verified"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -20,31 +20,33 @@
         <field name="name">tesote.webhook.config.form</field>
         <field name="model">tesote.webhook.config</field>
         <field name="arch" type="xml">
-            <form string="Webhook Configuration">
+            <form string="Webhook Configuration" create="false" delete="false">
                 <header>
-                    <button name="action_test_webhook" type="object" string="Test Webhook" class="btn-primary" attrs="{'invisible': [('enabled', '=', False)]}"/>
-                    <button name="action_verify_signature" type="object" string="Verify Signature" attrs="{'invisible': [('enabled', '=', False)]}"/>
+                    <button name="action_test_webhook" type="object" string="Test Webhook" class="btn-primary" invisible="enabled == False"/>
+                    <button name="action_verify_signature" type="object" string="Verify Signature" invisible="enabled == False"/>
                     <button name="action_regenerate_secret" type="object" string="Regenerate Secret" confirm="Are you sure you want to regenerate the webhook secret? This will invalidate the current webhook configuration." class="btn-warning"/>
                     <field name="enabled" widget="boolean_toggle" class="float-right"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="backend_id" readonly="1"/>
-                        </h1>
+                        <h1>Webhook Configuration</h1>
+                        <field name="backend_id" invisible="1"/>
                     </div>
                     <group>
                         <group string="Endpoint Configuration">
                             <field name="webhook_url" readonly="1" widget="url" help="Use this URL in your tesote.com webhook settings"/>
                             <field name="webhook_path" readonly="1" help="Internal webhook path"/>
-                            <field name="secret_key" password="True" readonly="1" help="Webhook secret for signature verification (click to reveal)"/>
+                            <field name="secret_key" password="True" readonly="1" help="Webhook secret for signature verification"/>
+                            <div class="o_field_widget o_field_text">
+                                <button type="object" name="action_show_secret" string="Show Configuration" class="btn btn-sm btn-secondary" icon="fa-eye"/>
+                            </div>
                             <field name="enabled"/>
                         </group>
                         <group string="Event Subscriptions">
                             <field name="active_events" widget="many2many_checkboxes" help="Select which events to process">
-                                <tree>
+                                <list>
                                     <field name="name"/>
-                                </tree>
+                                </list>
                             </field>
                         </group>
                     </group>
@@ -52,9 +54,9 @@
                         <group string="Verification Status">
                             <field name="last_verified" readonly="1"/>
                             <field name="verification_status" readonly="1"/>
-                            <field name="last_error" readonly="1" attrs="{'invisible': [('verification_status', '!=', 'failed')]}"/>
+                            <field name="last_error" readonly="1" invisible="verification_status != 'failed'"/>
                         </group>
-                        <group string="Statistics" attrs="{'invisible': [('enabled', '=', False)]}">
+                        <group string="Statistics" invisible="enabled == False">
                             <field name="total_received" readonly="1"/>
                             <field name="total_processed" readonly="1"/>
                             <field name="total_failed" readonly="1"/>
@@ -69,22 +71,22 @@
                                 <field name="timeout_seconds"/>
                             </group>
                         </page>
-                        <page string="Recent Events" attrs="{'invisible': [('enabled', '=', False)]}">
+                        <page string="Recent Events" invisible="enabled == False">
                             <field name="recent_webhook_events" readonly="1">
-                                <tree>
+                                <list>
                                     <field name="event_id"/>
                                     <field name="event_type"/>
                                     <field name="status" decoration-success="status == 'completed'" decoration-warning="status == 'processing'" decoration-danger="status == 'failed'"/>
                                     <field name="received_at"/>
                                     <field name="processing_duration"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page string="Monitoring Alerts">
                             <group>
                                 <field name="alert_on_failure"/>
-                                <field name="alert_threshold" attrs="{'invisible': [('alert_on_failure', '=', False)]}"/>
-                                <field name="alert_email_to" attrs="{'invisible': [('alert_on_failure', '=', False)]}" widget="email"/>
+                                <field name="alert_threshold" invisible="alert_on_failure == False"/>
+                                <field name="alert_email_to" invisible="alert_on_failure == False" widget="email"/>
                             </group>
                         </page>
                     </notebook>
@@ -112,27 +114,28 @@
         </field>
     </record>
 
-    <!-- Action for Webhook Config -->
+    <!-- Server Action to open singleton configuration -->
+    <record id="action_tesote_webhook_config_open" model="ir.actions.server">
+        <field name="name">Webhook Configuration</field>
+        <field name="model_id" ref="model_tesote_webhook_config"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_configuration()</field>
+    </record>
+    
+    <!-- Keep the old action for compatibility but redirect it -->
     <record id="action_tesote_webhook_config" model="ir.actions.act_window">
         <field name="name">Webhook Configuration</field>
         <field name="res_model">tesote.webhook.config</field>
-        <field name="view_mode">tree,form</field>
-        <field name="context">{'search_default_enabled': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Configure webhook settings for real-time synchronization
-            </p>
-            <p>
-                Webhooks allow tesote.com to notify your Odoo instance immediately when data changes occur.
-                This enables real-time synchronization without the need for periodic polling.
-            </p>
-        </field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="tesote_webhook_config_form"/>
+        <field name="target">current</field>
+        <field name="context">{'create': False, 'delete': False}</field>
     </record>
 
     <!-- Menu Item for Webhook Config -->
     <menuitem id="menu_tesote_webhook_config"
               parent="menu_tesote_configuration"
-              action="action_tesote_webhook_config"
+              action="action_tesote_webhook_config_open"
               sequence="30"
-              groups="connector.group_connector_manager"/>
+              groups="account.group_account_manager"/>
 </odoo>
