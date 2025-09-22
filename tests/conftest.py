@@ -45,6 +45,10 @@ class MockApi:
         return func
     
     @staticmethod
+    def model_create_multi(func):
+        return func
+    
+    @staticmethod
     def depends(*args):
         def decorator(func):
             return func
@@ -60,11 +64,22 @@ class MockUserError(Exception):
     """Mock UserError exception."""
     pass
 
+class MockHttp:
+    """Mock Odoo HTTP module."""
+    Controller = object
+    
+    @staticmethod
+    def route(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+
 # Set up the mocks
 sys.modules['odoo'].models.Model = MockModel
 sys.modules['odoo'].fields = MockFields()
 sys.modules['odoo'].api = MockApi()
 sys.modules['odoo.exceptions'].UserError = MockUserError
+sys.modules['odoo'].http = MockHttp()
 
 # Mock the translation function
 def mock_translate(text):

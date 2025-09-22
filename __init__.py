@@ -6,6 +6,7 @@
 try:
     from . import models
     from . import components
+    from . import controllers
 except ImportError:
     # Running in test environment
     pass

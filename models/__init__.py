@@ -6,3 +6,5 @@ from . import tesote_backend
 from . import tesote_account
 from . import tesote_transaction
 from . import tesote_sync_log
+from . import tesote_webhook_config
+from . import tesote_webhook_event
