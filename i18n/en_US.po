@@ -26,10 +26,6 @@ msgstr "Test Connection"
 msgid "Import Accounts"
 msgstr "Import Accounts"
 
-#. module: tesote_connector
-#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
-msgid "Import Accounts (Background)"
-msgstr "Import Accounts (Background)"
 
 #. module: tesote_connector
 #: code:addons/tesote_connector/models/tesote_backend.py:0

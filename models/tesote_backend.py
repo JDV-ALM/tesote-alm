@@ -405,57 +405,6 @@ class TesoteBackend(models.Model):
         }
 
     def import_accounts(self):
-        """
-        Import accounts from Tesote.
-        """
-        self.ensure_one()
-
-        # Create sync log
-        SyncLog = self.env['tesote.sync.log']
-        log = SyncLog.create_log(self, 'import_accounts')
-
-        try:
-            try:
-                from ..components.adapter import TesoteAdapter
-                from ..components.importer import TesoteAccountBatchImporter
-            except ImportError:
-                from components.adapter import TesoteAdapter
-                from components.importer import TesoteAccountBatchImporter
-
-            # Create adapter and importer
-            adapter = TesoteAdapter(self)
-            importer = TesoteAccountBatchImporter(self.env, self.id)
-
-            # Import accounts
-            count = importer.run(adapter)
-
-            # Update last import date
-            self.last_account_import_date = fields.Datetime.now()
-
-            # Mark log as successful
-            log.set_success(
-                records_added=count,
-                api_calls=1,
-                details=f'Imported {count} accounts'
-            )
-
-            # Show success message
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _('Success'),
-                    'message': _('Imported %d accounts') % count,
-                    'type': 'success',
-                    'sticky': False,
-                }
-            }
-        except Exception as e:
-            _logger.error(f"Account import failed: {str(e)}")
-            log.set_error(str(e))
-            raise UserError(_("Import failed: %s") % str(e))
-
-    def import_accounts_background(self):
         """Import accounts from Tesote - runs in background."""
         self.ensure_one()
 

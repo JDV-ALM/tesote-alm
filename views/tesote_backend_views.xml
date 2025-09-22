@@ -9,7 +9,6 @@
                 <header>
                     <button name="test_connection" type="object" string="Test Connection" class="btn-primary" icon="fa-plug"/>
                     <button name="import_accounts" type="object" string="Import Accounts" class="btn-secondary" icon="fa-download"/>
-                    <button name="import_accounts_background" type="object" string="Import Accounts (Background)" class="btn-info" icon="fa-cloud-download"/>
                     <button name="sync_all_transactions" type="object" string="Sync All Transactions" class="btn-secondary" icon="fa-refresh"/>
                 </header>
                 <sheet>

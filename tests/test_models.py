@@ -52,54 +52,18 @@ class TestTesoteBackend:
         assert hasattr(TesoteBackend, 'test_connection')
         assert callable(getattr(TesoteBackend, 'test_connection'))
     
-    def test_import_accounts_action(self, mock_env):
-        """Test action to import accounts."""
+    @patch('threading.Thread')
+    def test_import_accounts_action(self, mock_thread, mock_env):
+        """Test import accounts action (now runs in background)."""
         from models.tesote_backend import TesoteBackend
         
         backend = Mock(spec=TesoteBackend)
         backend.id = 1
         backend.import_accounts = TesoteBackend.import_accounts.__get__(backend, TesoteBackend)
-        backend.env = mock_env
-        backend.api_token = 'test_token'
-        backend._create_sync_log = Mock()
         backend.ensure_one = Mock()
         
-        # Mock adapter and account creation
-        with patch('components.adapter.TesoteAdapter') as MockAdapter:
-            mock_adapter = Mock()
-            mock_adapter.list_accounts.return_value = {
-                'accounts': [
-                    {'id': 'acc-001', 'name': 'Test Account'}
-                ],
-                'page': 1,
-                'total': 1
-            }
-            MockAdapter.return_value = mock_adapter
-            
-            # Mock account model
-            mock_account_model = Mock()
-            mock_env.__getitem__ = Mock(return_value=mock_account_model)
-            mock_account_model.search.return_value = []
-            mock_account_model.create.return_value = Mock(id=1)
-            
-            # Test import accounts
-            backend.import_accounts()
-            
-            # Verify adapter was called
-            mock_adapter.list_accounts.assert_called_once()
-
-    @patch('threading.Thread')
-    def test_import_accounts_background_method(self, mock_thread, mock_env):
-        """Test background import accounts method."""
-        from models.tesote_backend import TesoteBackend
-        
-        backend = Mock(spec=TesoteBackend)
-        backend.id = 1
-        backend.import_accounts_background = TesoteBackend.import_accounts_background.__get__(backend, TesoteBackend)
-        backend.ensure_one = Mock()
-        
-        # Test background import accounts
-        result = backend.import_accounts_background()
+        # Test import accounts (now background)
+        result = backend.import_accounts()
         
         # Should start a thread
         mock_thread.assert_called_once()
@@ -113,13 +77,13 @@ class TestTesoteBackend:
         """Test that background worker method exists and has correct signature."""
         from models.tesote_backend import TesoteBackend
         
-        # Test that the method exists
+        # Test that the worker method exists
         assert hasattr(TesoteBackend, '_import_accounts_background')
         assert callable(getattr(TesoteBackend, '_import_accounts_background'))
         
-        # Test that background import method exists  
-        assert hasattr(TesoteBackend, 'import_accounts_background')
-        assert callable(getattr(TesoteBackend, 'import_accounts_background'))
+        # Test that import method exists (now the background version)
+        assert hasattr(TesoteBackend, 'import_accounts')
+        assert callable(getattr(TesoteBackend, 'import_accounts'))
 
 
 class TestTesoteAccount:
