@@ -413,8 +413,12 @@ class TesoteBackend(models.Model):
         log = SyncLog.create_log(self, 'import_accounts')
         
         try:
-            from ..components.adapter import TesoteAdapter
-            from ..components.importer import TesoteAccountBatchImporter
+            try:
+                from ..components.adapter import TesoteAdapter
+                from ..components.importer import TesoteAccountBatchImporter
+            except ImportError:
+                from components.adapter import TesoteAdapter  
+                from components.importer import TesoteAccountBatchImporter
             
             # Create adapter and importer
             adapter = TesoteAdapter(self)
