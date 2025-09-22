@@ -61,18 +61,6 @@ class TesoteAccount(models.Model):
         for account in self:
             account.transaction_count = len(account.transaction_ids)
     
-    def action_view_transactions(self):
-        """Open transactions view for this account."""
-        self.ensure_one()
-        return {
-            'name': _('Transactions'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'tesote.transaction',
-            'view_mode': 'list,form,pivot,graph',
-            'domain': [('account_id', '=', self.id)],
-            'context': {'default_account_id': self.id},
-        }
-    
     bank_name = fields.Char(
         string='Bank Name',
         help='Name of the financial institution'
@@ -135,12 +123,6 @@ class TesoteAccount(models.Model):
             'Tesote ID must be unique per backend!'
         ),
     ]
-    
-    @api.depends('transaction_ids')
-    def _compute_transaction_count(self):
-        """Compute number of transactions."""
-        for account in self:
-            account.transaction_count = len(account.transaction_ids)
     
     def sync_from_tesote(self):
         """

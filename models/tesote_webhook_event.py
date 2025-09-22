@@ -191,23 +191,128 @@ class TesoteWebhookEvent(models.Model):
             'by_type': {},
             'average_duration': 0,
             'failure_rate': 0,
+            'signature_failures': 0,
+            'retry_attempts': 0,
+            'success_rate': 0,
+            'queue_depth': 0,
+            'syncs_triggered': 0,
+            'syncs_completed': 0,
         }
         
-        for status in ['pending', 'processing', 'completed', 'failed']:
-            stats['by_status'][status] = len(events.filtered(lambda e: e.status == status))
-        
-        event_types = events.mapped('event_type')
-        for event_type in set(event_types):
-            stats['by_type'][event_type] = len(events.filtered(lambda e: e.event_type == event_type))
-        
-        completed = events.filtered(lambda e: e.status == 'completed' and e.processing_duration)
-        if completed:
-            stats['average_duration'] = sum(completed.mapped('processing_duration')) / len(completed)
+        # Handle both Odoo recordsets and Python lists for testing
+        if hasattr(events, 'filtered'):
+            # Odoo recordset
+            for status in ['pending', 'processing', 'completed', 'failed']:
+                stats['by_status'][status] = len(events.filtered(lambda e: e.status == status))
+            
+            event_types = events.mapped('event_type')
+            for event_type in set(event_types):
+                stats['by_type'][event_type] = len(events.filtered(lambda e: e.event_type == event_type))
+            
+            completed = events.filtered(lambda e: e.status == 'completed' and e.processing_duration)
+            if completed:
+                stats['average_duration'] = sum(completed.mapped('processing_duration')) / len(completed)
+            
+            # Count retry attempts
+            stats['retry_attempts'] = sum(events.mapped('retry_count'))
+            
+            # Sync job metrics
+            sync_events = events.filtered(lambda e: e.event_type == 'sync.updates_available')
+            stats['syncs_triggered'] = len(sync_events.filtered(lambda e: e.sync_job_id))
+            stats['syncs_completed'] = len(sync_events.filtered(
+                lambda e: e.status == 'completed' and e.sync_job_id
+            ))
+        else:
+            # Python list for testing
+            for status in ['pending', 'processing', 'completed', 'failed']:
+                stats['by_status'][status] = len([e for e in events if e.status == status])
+            
+            event_types = [e.event_type for e in events]
+            for event_type in set(event_types):
+                stats['by_type'][event_type] = len([e for e in events if e.event_type == event_type])
+            
+            completed = [e for e in events if e.status == 'completed' and e.processing_duration]
+            if completed:
+                stats['average_duration'] = sum([e.processing_duration for e in completed]) / len(completed)
+            
+            # Count retry attempts
+            stats['retry_attempts'] = sum([e.retry_count for e in events])
+            
+            # Sync job metrics
+            sync_events = [e for e in events if e.event_type == 'sync.updates_available']
+            stats['syncs_triggered'] = len([e for e in sync_events if e.sync_job_id])
+            stats['syncs_completed'] = len([
+                e for e in sync_events if e.status == 'completed' and e.sync_job_id
+            ])
         
         if events:
             stats['failure_rate'] = (stats['by_status'].get('failed', 0) / len(events)) * 100
+            stats['success_rate'] = (stats['by_status'].get('completed', 0) / len(events)) * 100
+        
+        # Get signature failure count from config
+        config = self.env['tesote.webhook.config'].search([], limit=1)
+        if config:
+            stats['signature_failures'] = config.failed_signature_count
+        
+        # Queue depth (pending webhooks)
+        stats['queue_depth'] = stats['by_status'].get('pending', 0)
         
         return stats
+    
+    @api.model
+    def get_monitoring_metrics(self):
+        """
+        Get comprehensive monitoring metrics for webhooks.
+        Tracks metrics as specified in Phase 4 Task 4.3.
+        """
+        metrics = {
+            'hourly': self.get_statistics(hours=1),
+            'daily': self.get_statistics(hours=24),
+            'processing_time_by_type': {},
+            'retry_success_rate': 0,
+        }
+        
+        # Calculate average processing time by event type
+        events_24h = self.search([
+            ('received_at', '>=', fields.Datetime.now() - timedelta(days=1)),
+            ('status', '=', 'completed'),
+            ('processing_duration', '>', 0)
+        ])
+        
+        # Handle both Odoo recordsets and Python lists for testing
+        if hasattr(events_24h, 'mapped'):
+            # Odoo recordset
+            for event_type in set(events_24h.mapped('event_type')):
+                type_events = events_24h.filtered(lambda e: e.event_type == event_type)
+                if type_events:
+                    avg_duration = sum(type_events.mapped('processing_duration')) / len(type_events)
+                    metrics['processing_time_by_type'][event_type] = avg_duration
+        else:
+            # Python list for testing
+            event_types = set([e.event_type for e in events_24h])
+            for event_type in event_types:
+                type_events = [e for e in events_24h if e.event_type == event_type]
+                if type_events:
+                    avg_duration = sum([e.processing_duration for e in type_events]) / len(type_events)
+                    metrics['processing_time_by_type'][event_type] = avg_duration
+        
+        # Calculate retry success rate
+        retried_events = self.search([
+            ('retry_count', '>', 0),
+            ('received_at', '>=', fields.Datetime.now() - timedelta(days=7))
+        ])
+        
+        if retried_events:
+            if hasattr(retried_events, 'filtered'):
+                # Odoo recordset
+                successful_retries = retried_events.filtered(lambda e: e.status == 'completed')
+            else:
+                # Python list for testing
+                successful_retries = [e for e in retried_events if e.status == 'completed']
+            
+            metrics['retry_success_rate'] = (len(successful_retries) / len(retried_events)) * 100
+        
+        return metrics
 
     def process_webhook(self):
         """Process the webhook event based on its type."""

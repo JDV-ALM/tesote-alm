@@ -7,8 +7,7 @@ This tests the webhook processor's ability to:
 """
 
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
-from datetime import datetime
+from unittest.mock import MagicMock, patch
 
 # Import the webhook processor
 from components.webhook_processor import WebhookProcessor
