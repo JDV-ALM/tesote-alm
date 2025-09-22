@@ -13,6 +13,10 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import responses
 import sys
+import os
+
+# Add parent directory to path for imports when running tests standalone
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class TestTesoteAdapterSimple:
     """Test Tesote API Adapter without Odoo dependencies."""

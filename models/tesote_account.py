@@ -151,7 +151,12 @@ class TesoteAccount(models.Model):
         self.ensure_one()
         
         # For now, just update from API
-        from components.adapter import TesoteAdapter
+        try:
+            # Try relative import for Odoo
+            from ..components.adapter import TesoteAdapter
+        except (ImportError, ValueError):
+            # Fall back to absolute import for standalone tests
+            from components.adapter import TesoteAdapter
         adapter = TesoteAdapter(self.backend_id)
         
         # Get account data from API

@@ -15,6 +15,11 @@ import responses
 import pytest
 from datetime import datetime
 from freezegun import freeze_time
+import sys
+import os
+
+# Add parent directory to path for imports when running tests standalone
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class TestTesoteAdapter:
