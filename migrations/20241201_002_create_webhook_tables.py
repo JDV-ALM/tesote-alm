@@ -8,13 +8,13 @@ Description: Creates webhook-related tables for real-time event processing
 """
 
 try:
-    from .framework import BaseMigration
+    from ..migration_framework import BaseMigration
 except ImportError:
     # Fallback for testing
     import sys
     from pathlib import Path
-    sys.path.append(str(Path(__file__).parent))
-    from framework import BaseMigration
+    sys.path.append(str(Path(__file__).parent.parent))
+    from migration_framework import BaseMigration
 
 
 class CreateWebhookTables(BaseMigration):

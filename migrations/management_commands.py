@@ -8,7 +8,7 @@ Similar to Rails rake db: commands
 
 import logging
 from pathlib import Path
-from .framework import MigrationRunner
+from ..migration_framework import MigrationRunner
 
 _logger = logging.getLogger(__name__)
 

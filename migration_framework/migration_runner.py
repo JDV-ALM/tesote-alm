@@ -264,7 +264,7 @@ Migration: {name}
 Generated: {datetime.now().isoformat()}
 """
 
-from ..framework import BaseMigration
+from ..migration_framework import BaseMigration
 
 
 class {name}(BaseMigration):

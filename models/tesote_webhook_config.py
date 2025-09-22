@@ -127,8 +127,7 @@ class TesoteWebhookConfig(models.Model):
     recent_webhook_events = fields.One2many(
         'tesote.webhook.event',
         'webhook_config_id',
-        string='Recent Events',
-        limit=10
+        string='Recent Events'
     )
 
     # Alert configuration
