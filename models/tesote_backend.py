@@ -307,7 +307,7 @@ class TesoteBackend(models.Model):
                     from ..components.adapter import TesoteAdapter
                 except (ImportError, ValueError):
                     # Fall back to absolute import for standalone tests
-                    from components.adapter import TesoteAdapter
+                    from ..components.adapter import TesoteAdapter
             
             # Create adapter instance
             adapter = TesoteAdapter(self)
@@ -431,7 +431,7 @@ class TesoteBackend(models.Model):
                     from ..components.adapter import TesoteAdapter
                 except (ImportError, ValueError):
                     # Fall back to absolute import for standalone tests
-                    from components.adapter import TesoteAdapter
+                    from ..components.adapter import TesoteAdapter
             try:
                 # Try Odoo module import
                 from odoo.addons.tesote_connector.components.importer import TesoteAccountBatchImporter
@@ -441,7 +441,7 @@ class TesoteBackend(models.Model):
                     from ..components.importer import TesoteAccountBatchImporter
                 except (ImportError, ValueError):
                     # Fall back to absolute import for standalone tests
-                    from components.importer import TesoteAccountBatchImporter
+                    from ..components.importer import TesoteAccountBatchImporter
             
             # Create adapter and importer
             adapter = TesoteAdapter(self)
@@ -530,7 +530,7 @@ class TesoteBackend(models.Model):
                     from ..components.adapter import TesoteAdapter
                 except (ImportError, ValueError):
                     # Fall back to absolute import for standalone tests
-                    from components.adapter import TesoteAdapter
+                    from ..components.adapter import TesoteAdapter
                 adapter = TesoteAdapter(backend)
                 
                 for account in backend.account_ids:
@@ -632,13 +632,13 @@ class TesoteBackend(models.Model):
                     from ..components.adapter import TesoteAdapter
                 except (ImportError, ValueError):
                     # Fall back to absolute import for standalone tests
-                    from components.adapter import TesoteAdapter
+                    from ..components.adapter import TesoteAdapter
                 try:
                     # Try relative import for Odoo
                     from ..components.importer import TesoteAccountBatchImporter
                 except (ImportError, ValueError):
                     # Fall back to absolute import for standalone tests
-                    from components.importer import TesoteAccountBatchImporter
+                    from ..components.importer import TesoteAccountBatchImporter
                 
                 adapter = TesoteAdapter(backend)
                 importer = TesoteAccountBatchImporter(new_env, backend.id)
@@ -783,7 +783,7 @@ class TesoteBackend(models.Model):
                 from ..components.adapter import TesoteAdapter
             except (ImportError, ValueError):
                 # Fall back to absolute import for standalone tests
-                from components.adapter import TesoteAdapter
+                from ..components.adapter import TesoteAdapter
         adapter = TesoteAdapter(self)
         
         for account in accounts:

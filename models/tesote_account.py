@@ -160,7 +160,7 @@ class TesoteAccount(models.Model):
                 from ..components.adapter import TesoteAdapter
             except (ImportError, ValueError):
                 # Fall back to absolute import for standalone tests
-                from components.adapter import TesoteAdapter
+                from ..components.adapter import TesoteAdapter
         adapter = TesoteAdapter(self.backend_id)
         
         # Get account data from API
