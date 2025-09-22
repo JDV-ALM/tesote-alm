@@ -7,7 +7,7 @@ Odoo 18.0 connector for **tesote.com API v2.0.0** - Real-time financial data syn
 - **Client to tesote.com Sync**: Real-time transaction synchronization using v2 `/transactions/sync` endpoint
 - **Cursor-Based Sync**: Efficient incremental updates with cursor management
 - **Transaction Lifecycle**: Handles pending → completed state transitions
-- **Webhook Ready**: Support for webhook notifications
+- **Real-time Webhooks**: Secure HMAC-SHA256 verified webhook processing with event subscriptions
 - **Multi-Company**: Support for multiple companies and backends
 
 ## Requirements
@@ -112,11 +112,34 @@ sudo systemctl restart odoo18
 
 ## Configuration
 
+### Backend Setup
 1. Go to **Connectors → tesote.com → Backends**
 2. Create a new backend with:
    - API URL: `https://staging.tesote.com`
    - API Token: Your bearer token
-   - Webhook URL/Secret (optional): For webhook notifications
+
+### Webhook Configuration (Optional)
+3. Go to **Connectors → tesote.com → Webhook Configuration**
+4. Configure webhook settings:
+   - **Enable webhooks** - Toggle webhook processing
+   - **Event subscriptions** - Choose which events to receive:
+     - `sync.updates_available` - Triggers automatic sync when new data is available
+     - `accounts.created` - Notifies when new accounts are added
+     - `accounts.updated` - Notifies when account details change
+     - `transactions.created` - Real-time transaction notifications (optional)
+     - `transactions.updated` - Transaction status updates (optional)
+   - **Security** - Automatic HMAC-SHA256 signature verification
+   - **Monitoring** - Built-in webhook event tracking and failure alerts
+
+5. **Webhook URL**: Your endpoint will be automatically generated as:
+   ```
+   https://your-odoo-domain.com/tesote/webhook
+   ```
+
+6. **Configure in tesote.com**:
+   - Use the generated webhook URL in your tesote.com API settings
+   - Copy the secret key from the configuration (click "Show Secret")
+   - Subscribe to the events you've enabled in Odoo
 
 ## Usage
 
@@ -175,6 +198,14 @@ account.import_transactions()
 - `POST /api/v2/transactions/sync` - Sync transactions (cursor-based)
 - `GET /api/v2/status` - Check API status
 - `GET /api/v2/whoami` - Get client information
+
+## Webhook Events Supported
+
+- `sync.updates_available` - Triggered when new transactions are available for sync
+- `accounts.created` - New account created in tesote.com
+- `accounts.updated` - Account details updated (balance, name, etc.)
+- `transactions.created` - New transaction added (real-time)
+- `transactions.updated` - Transaction status changed (pending → completed)
 
 ## License
 

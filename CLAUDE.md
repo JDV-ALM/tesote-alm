@@ -31,6 +31,14 @@ tesote.com Odoo API Connector - Integration between Odoo 18.0 and tesote.com API
 - `binder.py` - Maps tesote.com IDs ↔ Odoo IDs
 - `mapper.py` - Data transformation between formats
 - `importer.py` - Handles sync response (added/modified/removed)
+- `webhook_processor.py` - Handles real-time webhook event processing
+
+### Webhooks
+- `tesote_webhook_config.py` - Webhook configuration (singleton pattern)
+- `tesote_webhook_event.py` - Webhook event records and processing
+- `webhook_controller.py` - HTTP endpoint for receiving webhooks (`/tesote/webhook`)
+- Real-time event processing with HMAC-SHA256 signature verification
+- Supports sync triggers, account updates, transaction notifications
 
 ## Testing
 
@@ -74,6 +82,7 @@ This allows running tests in any Python environment without Odoo installation.
 - **Sync Arrays**: Process in order: removed → modified → added
 - **Cursor**: Always store `next_cursor` for incremental updates
 - **Rate Limits**: 200/min standard, 500/min premium, 1000/min enterprise
+- **Webhooks**: Real-time notifications for `sync.updates_available`, `accounts.created/updated`, `transactions.created/updated`
 
 ## Development Guidelines
 
@@ -83,6 +92,7 @@ This allows running tests in any Python environment without Odoo installation.
 4. **Cursor Management** - Always update and store cursors after sync
 5. **Singleton Backend** - Only one backend configuration allowed
 6. **Date Handling** - Convert ISO dates with timezone to Odoo format
+7. **Webhook Security** - Always verify HMAC-SHA256 signatures and check idempotency
 
 ## Internationalization (i18n)
 
