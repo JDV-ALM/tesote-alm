@@ -152,11 +152,15 @@ class TesoteAccount(models.Model):
         
         # For now, just update from API
         try:
-            # Try relative import for Odoo
-            from ..components.adapter import TesoteAdapter
-        except (ImportError, ValueError):
-            # Fall back to absolute import for standalone tests
-            from components.adapter import TesoteAdapter
+            # Try Odoo module import
+            from odoo.addons.tesote_connector.components.adapter import TesoteAdapter
+        except ImportError:
+            try:
+                # Try relative import
+                from ..components.adapter import TesoteAdapter
+            except (ImportError, ValueError):
+                # Fall back to absolute import for standalone tests
+                from components.adapter import TesoteAdapter
         adapter = TesoteAdapter(self.backend_id)
         
         # Get account data from API
