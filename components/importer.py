@@ -170,7 +170,16 @@ class TesoteTransactionSyncImporter(TesoteImporter):
     def _process_sync_results(self, account, sync_result: Dict[str, Any]) -> None:
         """Process sync results."""
         TesoteTransaction = self.env['tesote.transaction']
-        from .mapper import TesoteTransactionImportMapper
+        try:
+            # Try Odoo module import
+            from odoo.addons.tesote_connector.components.mapper import TesoteTransactionImportMapper
+        except ImportError:
+            try:
+                # Try relative import
+                from .mapper import TesoteTransactionImportMapper
+            except ImportError:
+                # Fall back to absolute import for tests
+                from components.mapper import TesoteTransactionImportMapper
         
         mapper = TesoteTransactionImportMapper(self.env, self.backend_id)
         
