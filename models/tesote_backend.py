@@ -455,6 +455,87 @@ class TesoteBackend(models.Model):
             log.set_error(str(e))
             raise UserError(_("Import failed: %s") % str(e))
 
+    def import_accounts_background(self):
+        """Import accounts from Tesote - runs in background."""
+        self.ensure_one()
+
+        # Start background import
+        threading.Thread(
+            target=self._import_accounts_background,
+            args=(self.id,),
+            daemon=True
+        ).start()
+
+        # Return immediate notification
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Import Started'),
+                'message': _('Account import has been started in the background. Check the sync logs for progress.'),
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    def _import_accounts_background(self, backend_id):
+        """Background worker for account import."""
+        with self.env.registry.cursor() as new_cr:
+            # Create new environment with new cursor
+            new_env = api.Environment(new_cr, self.env.uid, self.env.context)
+            backend = new_env['tesote.backend'].browse(backend_id)
+
+            # Create sync log
+            SyncLog = new_env['tesote.sync.log']
+            log = SyncLog.create_log(
+                backend,
+                'import_accounts',
+                is_background=True,
+                details='Background import of all accounts'
+            )
+
+            try:
+                try:
+                    from ..components.adapter import TesoteAdapter
+                    from ..components.importer import TesoteAccountBatchImporter
+                except ImportError:
+                    from components.adapter import TesoteAdapter
+                    from components.importer import TesoteAccountBatchImporter
+
+                # Create adapter and importer
+                adapter = TesoteAdapter(backend)
+                importer = TesoteAccountBatchImporter(new_env, backend.id)
+
+                # Update log progress
+                log.update_progress(
+                    details='Starting account import from Tesote API',
+                    api_calls=0
+                )
+
+                # Import accounts
+                count = importer.run(adapter)
+
+                # Update last import date
+                backend.last_account_import_date = fields.Datetime.now()
+
+                # Mark log as successful
+                log.set_success(
+                    records_added=count,
+                    api_calls=1,
+                    details=f'Background import completed: {count} accounts imported'
+                )
+
+                _logger.info(f"Background account import completed: {count} accounts imported")
+
+                # Commit the transaction
+                new_cr.commit()
+
+            except Exception as e:
+                _logger.error(f"Background account import failed: {str(e)}")
+                log.set_error(str(e))
+                # Rollback in case of error
+                new_cr.rollback()
+
     def sync_all_transactions(self):
         """Sync transactions for all accounts - runs in background."""
         self.ensure_one()
