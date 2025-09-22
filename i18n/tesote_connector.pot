@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 19:00:00\n"
+"POT-Creation-Date: 2025-09-22 22:00:00\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -374,3 +374,60 @@ msgstr ""
 #, python-format
 msgid "The webhook event has been manually marked as completed"
 msgstr ""
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_config_form
+msgid "Webhook Configuration"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Only one webhook configuration is allowed. Please edit the existing configuration."
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Secret Regenerated"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Webhook Test"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Test webhook event created successfully! Check the webhook events for results."
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature Verification"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature verification successful"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature verification failed"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_event_list
+msgid "Webhook Events"
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_event_form
+msgid "Event Details"
+msgstr ""
+

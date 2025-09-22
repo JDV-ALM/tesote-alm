@@ -27,8 +27,17 @@
         id="menu_tesote_sync_log"
         name="Sync Logs"
         parent="menu_tesote_configuration"
-        action="tesote_connector.action_tesote_sync_log"
+        action="action_tesote_sync_log"
         sequence="20"/>
+    
+    <!-- Webhook Configuration Menu -->
+    <menuitem
+        id="menu_tesote_webhook_config"
+        name="Webhook Settings"
+        parent="menu_tesote_configuration"
+        action="action_tesote_webhook_config_open"
+        sequence="30"
+        groups="account.group_account_manager"/>
     
     <!-- Data Menu -->
     <menuitem
@@ -53,6 +62,38 @@
         action="action_tesote_transaction"
         sequence="20"/>
     
+    <!-- Webhooks Menu -->
+    <menuitem
+        id="menu_tesote_webhook"
+        name="Webhooks"
+        parent="menu_tesote_root"
+        sequence="40"
+        groups="account.group_account_manager"/>
+    
+    <!-- Webhook Events Dashboard -->
+    <menuitem
+        id="menu_tesote_webhook_events"
+        name="Events Dashboard"
+        parent="menu_tesote_webhook"
+        action="action_tesote_webhook_event_dashboard"
+        sequence="10"/>
+
+    <!-- Recent Webhook Events -->
+    <menuitem
+        id="menu_tesote_webhook_recent"
+        name="Recent Events"
+        parent="menu_tesote_webhook"
+        action="action_tesote_webhook_event_recent"
+        sequence="20"/>
+
+    <!-- Failed Webhook Events -->
+    <menuitem
+        id="menu_tesote_webhook_failed"
+        name="Failed Events"
+        parent="menu_tesote_webhook"
+        action="action_tesote_webhook_event_failed"
+        sequence="30"/>
+
     <!-- Reports Menu -->
     <menuitem
         id="menu_tesote_reports"

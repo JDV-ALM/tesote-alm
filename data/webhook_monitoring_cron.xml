@@ -21,15 +21,11 @@ if alerts:
             <field name="name">Tesote: Generate Webhook Daily Report</field>
             <field name="model_id" ref="model_tesote_webhook_monitor"/>
             <field name="state">code</field>
-            <field name="code">import logging
-
-_logger = logging.getLogger(__name__)
-
-monitor = env['tesote.webhook.monitor']
+            <field name="code">monitor = env['tesote.webhook.monitor']
 report = monitor.generate_daily_report()
 if report:
-    # Log the report or send via email
-    _logger.info(f"Daily webhook report: {report}")</field>
+    # Log the report
+    env.context.get('logger', lambda x: None)("Daily webhook report generated")</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
@@ -41,24 +37,13 @@ if report:
             <field name="name">Tesote: Cleanup Old Webhook Data</field>
             <field name="model_id" ref="model_tesote_webhook_monitor"/>
             <field name="state">code</field>
-            <field name="code">from datetime import datetime, timedelta
-import logging
-
-_logger = logging.getLogger(__name__)
-
-# Cleanup old monitor records
+            <field name="code"># Cleanup old monitor and event records
 monitor = env['tesote.webhook.monitor']
-cleaned = monitor.cleanup_old_monitors(days=90)
+monitor.cleanup_old_monitors(days=90)
 
-# Also cleanup old webhook events
-cutoff = datetime.now() - timedelta(days=90)
-old_events = env['tesote.webhook.event'].search([
-    ('received_at', '&lt;', cutoff),
-    ('status', 'in', ['completed', 'failed'])
-])
-if old_events:
-    old_events.unlink()
-    _logger.info(f"Cleaned up {len(old_events)} old webhook events")</field>
+# Cleanup old webhook events using relative date
+webhook_events = env['tesote.webhook.event']
+webhook_events.cleanup_old_events(days=90)</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">7</field>
             <field name="interval_type">days</field>
@@ -70,18 +55,9 @@ if old_events:
             <field name="name">Tesote: Update Webhook Metrics</field>
             <field name="model_id" ref="model_tesote_webhook_event"/>
             <field name="state">code</field>
-            <field name="code">from datetime import datetime, timedelta
-
-# Update metrics for recent webhook events
-cutoff_time = datetime.now() - timedelta(minutes=10)
-recent_events = env['tesote.webhook.event'].search([
-    ('received_at', '>=', cutoff_time),
-    ('status', 'in', ['completed', 'failed'])
-])
-
+            <field name="code"># Update metrics for recent webhook events
 monitor = env['tesote.webhook.monitor']
-for event in recent_events:
-    monitor.update_metrics(event)</field>
+monitor.update_recent_metrics()</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>

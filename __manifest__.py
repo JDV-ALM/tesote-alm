@@ -56,6 +56,7 @@ Technical Highlights:
         "views/tesote_webhook_secret_wizard_views.xml",
         "views/tesote_menu.xml",
     ],
+    # "post_init_hook": "post_init_hook",
     "images": [
         "static/description/banner.png",
         "static/description/screenshot_1.png",

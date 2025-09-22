@@ -561,3 +561,18 @@ class TesoteWebhookEvent(models.Model):
                 'sticky': False,
             }
         }
+
+    @api.model
+    def cleanup_old_events(self, days=90):
+        """Clean up old webhook events older than specified days"""
+        cutoff_date = fields.Datetime.now() - timedelta(days=days)
+        old_events = self.search([
+            ('received_at', '<', cutoff_date),
+            ('status', 'in', ['completed', 'failed'])
+        ])
+
+        if old_events:
+            _logger.info('Cleaning up %d old webhook events', len(old_events))
+            old_events.unlink()
+
+        return len(old_events)

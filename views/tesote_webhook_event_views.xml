@@ -208,28 +208,4 @@
         <field name="context">{'search_default_last_7_days': 1}</field>
     </record>
 
-    <!-- Menu Items -->
-    <menuitem id="menu_tesote_webhook"
-              parent="menu_tesote_root"
-              name="Webhooks"
-              sequence="40"
-              groups="account.group_account_manager"/>
-
-    <menuitem id="menu_tesote_webhook_events"
-              parent="menu_tesote_webhook"
-              action="action_tesote_webhook_event_dashboard"
-              name="Events Dashboard"
-              sequence="10"/>
-
-    <menuitem id="menu_tesote_webhook_recent"
-              parent="menu_tesote_webhook"
-              action="action_tesote_webhook_event_recent"
-              name="Recent Events"
-              sequence="20"/>
-
-    <menuitem id="menu_tesote_webhook_failed"
-              parent="menu_tesote_webhook"
-              action="action_tesote_webhook_event_failed"
-              name="Failed Events"
-              sequence="30"/>
 </odoo>

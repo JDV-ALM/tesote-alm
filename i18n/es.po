@@ -547,3 +547,60 @@ msgstr "Evento Marcado como Completado"
 #, python-format
 msgid "The webhook event has been manually marked as completed"
 msgstr "El evento de webhook ha sido marcado manualmente como completado"
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_config_form
+msgid "Webhook Configuration"
+msgstr "Configuración de Webhooks"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Only one webhook configuration is allowed. Please edit the existing configuration."
+msgstr "Solo se permite una configuración de webhook. Por favor edite la configuración existente."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Secret Regenerated"
+msgstr "Secreto Regenerado"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Webhook Test"
+msgstr "Prueba de Webhook"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Test webhook event created successfully! Check the webhook events for results."
+msgstr "¡Evento de prueba de webhook creado exitosamente! Revise los eventos de webhook para ver los resultados."
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature Verification"
+msgstr "Verificación de Firma"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature verification successful"
+msgstr "Verificación de firma exitosa"
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_webhook_config.py:0
+#, python-format
+msgid "Signature verification failed"
+msgstr "Verificación de firma falló"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_event_list
+msgid "Webhook Events"
+msgstr "Eventos de Webhook"
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_event_form
+msgid "Event Details"
+msgstr "Detalles del Evento"
+

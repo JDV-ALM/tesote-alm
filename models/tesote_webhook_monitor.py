@@ -313,6 +313,18 @@ class TesoteWebhookMonitor(models.Model):
 
         return len(old_monitors)
 
+    @api.model
+    def update_recent_metrics(self):
+        """Update metrics for recent webhook events (last 10 minutes)"""
+        cutoff_time = fields.Datetime.now() - timedelta(minutes=10)
+        recent_events = self.env['tesote.webhook.event'].search([
+            ('received_at', '>=', cutoff_time),
+            ('status', 'in', ['completed', 'failed'])
+        ])
+
+        for event in recent_events:
+            self.update_metrics(event)
+
     def get_hourly_chart_data(self):
         """Get data for hourly chart visualization"""
         self.ensure_one()

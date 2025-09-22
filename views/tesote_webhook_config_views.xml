@@ -132,10 +132,4 @@
         <field name="context">{'create': False, 'delete': False}</field>
     </record>
 
-    <!-- Menu Item for Webhook Config -->
-    <menuitem id="menu_tesote_webhook_config"
-              parent="menu_tesote_configuration"
-              action="action_tesote_webhook_config_open"
-              sequence="30"
-              groups="account.group_account_manager"/>
 </odoo>
