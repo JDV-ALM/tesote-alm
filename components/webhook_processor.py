@@ -69,6 +69,12 @@ class WebhookProcessor:
 
         This triggers a background sync job for the specified account,
         reusing the existing sync infrastructure.
+
+        Phase 3 Implementation:
+        - Extracts account_id from webhook payload
+        - Uses existing sync infrastructure from adapter.py
+        - Calls POST /api/v2/transactions/sync with stored cursor
+        - Processes added/modified/removed arrays from response
         """
         data = payload_data.get('data', {})
         account_id = data.get('id')
@@ -78,7 +84,7 @@ class WebhookProcessor:
 
         TesoteAccount = self.env['tesote.account'].sudo()
         account = TesoteAccount.search([
-            ('external_id', '=', account_id),
+            ('tesote_id', '=', account_id),  # Changed from 'external_id' to 'tesote_id'
             ('backend_id', '=', webhook_event.backend_id.id)
         ], limit=1)
 
@@ -86,34 +92,51 @@ class WebhookProcessor:
             _logger.warning(f"Account {account_id} not found, attempting to fetch from API")
             self._fetch_and_create_account(account_id, webhook_event.backend_id)
             account = TesoteAccount.search([
-                ('external_id', '=', account_id),
+                ('tesote_id', '=', account_id),  # Changed from 'external_id' to 'tesote_id'
                 ('backend_id', '=', webhook_event.backend_id.id)
             ], limit=1)
 
             if not account:
                 raise ValueError(f"Could not find or create account {account_id}")
 
+        # Extract sync statistics from webhook payload
         new_count = data.get('new_transactions', 0)
         modified_count = data.get('modified_transactions', 0)
         removed_count = data.get('removed_transactions', 0)
+
+        # Also extract the IDs if provided (useful for debugging)
+        new_ids = data.get('new_ids', [])
+        updated_ids = data.get('updated_ids', [])
+        removed_ids = data.get('removed_ids', [])
 
         _logger.info(
             f"Processing sync.updates_available for account {account_id}: "
             f"new={new_count}, modified={modified_count}, removed={removed_count}"
         )
 
-        if hasattr(account, 'with_delay'):
-            job = account.with_delay(
+        if new_ids or updated_ids or removed_ids:
+            _logger.debug(
+                f"Transaction IDs - New: {new_ids}, Updated: {updated_ids}, Removed: {removed_ids}"
+            )
+
+        # Get the backend and trigger sync using the backend's sync method
+        backend = webhook_event.backend_id
+
+        # Use the backend's sync_transactions_v2 method which handles cursor-based sync
+        if hasattr(backend, 'with_delay'):
+            # Queue the sync job for async processing
+            job = backend.with_delay(
                 priority=5,
                 max_retries=3,
                 description=f"Sync transactions for account {account.name} (webhook triggered)"
-            ).sync_transactions()
+            ).sync_transactions_v2(account_ids=[account.id])
 
             if hasattr(job, 'uuid'):
                 webhook_event.sync_job_id = str(job.uuid)
                 _logger.info(f"Queued sync job {job.uuid} for account {account_id}")
         else:
-            account.sync_transactions()
+            # Execute sync directly if queue_job is not available
+            backend.sync_transactions_v2(account_ids=[account.id])
             _logger.info(f"Executed direct sync for account {account_id}")
 
     def _handle_account_created(self, webhook_event, payload_data):
@@ -126,7 +149,7 @@ class WebhookProcessor:
 
         TesoteAccount = self.env['tesote.account'].sudo()
         existing = TesoteAccount.search([
-            ('external_id', '=', account_id),
+            ('tesote_id', '=', account_id),
             ('backend_id', '=', webhook_event.backend_id.id)
         ], limit=1)
 
@@ -142,13 +165,14 @@ class WebhookProcessor:
 
         if data.get('sync_required', False):
             _logger.info(f"Account {account_id} requires initial sync")
-            if hasattr(new_account, 'with_delay'):
-                new_account.with_delay(
+            backend = webhook_event.backend_id
+            if hasattr(backend, 'with_delay'):
+                backend.with_delay(
                     priority=10,
                     description=f"Initial sync for new account {new_account.name}"
-                ).sync_transactions()
+                ).sync_transactions_v2(account_ids=[new_account.id])
             else:
-                new_account.sync_transactions()
+                backend.sync_transactions_v2(account_ids=[new_account.id])
 
     def _handle_account_updated(self, webhook_event, payload_data):
         """Handle accounts.updated webhook event."""
@@ -160,7 +184,7 @@ class WebhookProcessor:
 
         TesoteAccount = self.env['tesote.account'].sudo()
         account = TesoteAccount.search([
-            ('external_id', '=', account_id),
+            ('tesote_id', '=', account_id),
             ('backend_id', '=', webhook_event.backend_id.id)
         ], limit=1)
 
@@ -175,11 +199,14 @@ class WebhookProcessor:
 
         if data.get('balance_changed', False):
             _logger.info(f"Account {account_id} balance changed, triggering sync")
-            if hasattr(account, 'with_delay'):
-                account.with_delay(
+            backend = webhook_event.backend_id
+            if hasattr(backend, 'with_delay'):
+                backend.with_delay(
                     priority=8,
                     description=f"Sync after balance change for {account.name}"
-                ).sync_transactions()
+                ).sync_transactions_v2(account_ids=[account.id])
+            else:
+                backend.sync_transactions_v2(account_ids=[account.id])
 
     def _handle_transaction_created(self, webhook_event, payload_data):
         """Handle transactions.created webhook event."""
@@ -192,7 +219,7 @@ class WebhookProcessor:
 
         TesoteAccount = self.env['tesote.account'].sudo()
         account = TesoteAccount.search([
-            ('external_id', '=', account_id),
+            ('tesote_id', '=', account_id),
             ('backend_id', '=', webhook_event.backend_id.id)
         ], limit=1)
 
@@ -202,7 +229,7 @@ class WebhookProcessor:
 
         TesoteTransaction = self.env['tesote.transaction'].sudo()
         existing = TesoteTransaction.search([
-            ('external_id', '=', transaction_id),
+            ('tesote_id', '=', transaction_id),
             ('account_id', '=', account.id)
         ], limit=1)
 
@@ -228,7 +255,7 @@ class WebhookProcessor:
 
         TesoteTransaction = self.env['tesote.transaction'].sudo()
         transaction = TesoteTransaction.search([
-            ('external_id', '=', transaction_id)
+            ('tesote_id', '=', transaction_id)
         ], limit=1)
 
         if not transaction:
@@ -255,7 +282,7 @@ class WebhookProcessor:
     def _prepare_account_values(self, data, backend):
         """Prepare account values from webhook data."""
         return {
-            'external_id': data.get('id'),
+            'tesote_id': data.get('id'),
             'backend_id': backend.id,
             'name': data.get('name', f"Account {data.get('id')}"),
             'account_type': data.get('type', 'checking'),
@@ -298,7 +325,7 @@ class WebhookProcessor:
             transaction_date = fields.Date.today()
 
         return {
-            'external_id': data.get('id'),
+            'tesote_id': data.get('id'),
             'account_id': account.id,
             'name': data.get('description', f"Transaction {data.get('id')}"),
             'date': transaction_date,
