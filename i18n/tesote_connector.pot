@@ -26,6 +26,23 @@ msgstr ""
 
 #. module: tesote_connector
 #: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
+msgid "Import Accounts (Background)"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Import Started"
+msgstr ""
+
+#. module: tesote_connector
+#: code:addons/tesote_connector/models/tesote_backend.py:0
+#, python-format
+msgid "Account import has been started in the background. Check the sync logs for progress."
+msgstr ""
+
+#. module: tesote_connector
+#: model:ir.ui.view,arch_db:tesote_connector.view_tesote_backend_form
 msgid "Sync All Transactions"
 msgstr ""
 
