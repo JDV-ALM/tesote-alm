@@ -181,6 +181,21 @@ class TesoteBackend(models.Model):
         store=False
     )
 
+    @property
+    def _module_version(self):
+        """Get module version from manifest."""
+        try:
+            # Try to get version from installed module
+            module = self.env['ir.module.module'].sudo().search(
+                [('name', '=', 'tesote_odoo_api_connector')], limit=1
+            )
+            if module and module.latest_version:
+                return module.latest_version
+        except Exception:
+            pass
+        # Fallback to hardcoded version
+        return '18.0.1.0.0'
+
     @api.model
     def create(self, vals):
         """Override create to ensure only one backend exists."""

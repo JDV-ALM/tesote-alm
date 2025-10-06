@@ -60,11 +60,13 @@ class TesoteAdapter:
         """Get or create requests session with authentication."""
         if not self._session:
             self._session = requests.Session()
+            # Get module version from manifest
+            module_version = getattr(self.backend, '_module_version', '18.0.1.0.0')
             self._session.headers.update({
                 'Authorization': f'Bearer {self.api_token}',
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'User-Agent': f'TesoteOdooConnector/{self.API_VERSION}',
+                'User-Agent': f'TesoteOdooConnector/{module_version} (API/{self.API_VERSION}; Odoo/18.0; Python/requests)',
             })
         return self._session
     
