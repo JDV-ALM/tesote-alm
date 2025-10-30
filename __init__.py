@@ -32,3 +32,64 @@ def post_init_hook(cr, registry):
         _logger.error(f"Migration failed during post_init_hook: {e}")
         # Don't re-raise to avoid blocking module installation
         # Users can run migrations manually if needed
+
+
+def pre_uninstall_hook(cr, registry):
+    """
+    Hook executed before module uninstallation.
+
+    Logs comprehensive information about data that will be deleted.
+    This provides visibility beyond Odoo's standard uninstall preview.
+    """
+    import logging
+
+    _logger = logging.getLogger(__name__)
+
+    _logger.warning("=" * 80)
+    _logger.warning("TESOTE CONNECTOR - PRE-UNINSTALL DATA SUMMARY")
+    _logger.warning("=" * 80)
+    _logger.warning("The following data will be PERMANENTLY DELETED:")
+    _logger.warning("")
+
+    # Query all tesote_connector tables and count records
+    tables = [
+        ("tesote_backend", "Backend Configurations"),
+        ("tesote_account", "Synced Accounts"),
+        ("tesote_transaction", "Synced Transactions"),
+        ("tesote_sync_log", "Sync History Logs"),
+        ("tesote_webhook_config", "Webhook Configurations"),
+        ("tesote_webhook_event", "Webhook Event History"),
+        ("tesote_webhook_event_type", "Webhook Event Types"),
+        ("tesote_webhook_monitor", "Webhook Monitoring Data"),
+        ("tesote_webhook_secret_wizard", "Wizard Records"),
+    ]
+
+    total_records = 0
+
+    for table_name, description in tables:
+        try:
+            cr.execute(f"SELECT COUNT(*) FROM {table_name}")
+            count = cr.fetchone()[0]
+            total_records += count
+
+            if count > 0:
+                _logger.warning(f"  - {description:30} : {count:6} records")
+            else:
+                _logger.warning(f"  - {description:30} : {count:6} records (empty)")
+
+        except Exception as e:
+            # Table might not exist if module was never fully installed
+            _logger.warning(f"  - {description:30} : (table not found)")
+
+    _logger.warning("")
+    _logger.warning(f"TOTAL RECORDS TO BE DELETED: {total_records}")
+    _logger.warning("")
+    _logger.warning("Additional items to be removed:")
+    _logger.warning("  - All menu items and views")
+    _logger.warning("  - All scheduled actions (cron jobs)")
+    _logger.warning("  - All access rights and security rules")
+    _logger.warning("  - All ir.model.access records")
+    _logger.warning("")
+    _logger.warning("⚠️  THIS OPERATION CANNOT BE UNDONE")
+    _logger.warning("⚠️  Ensure you have a database backup before proceeding")
+    _logger.warning("=" * 80)
