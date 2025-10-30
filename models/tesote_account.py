@@ -70,6 +70,12 @@ class TesoteAccount(models.Model):
         string="Updated in Tesote", readonly=True, help="Last update date in Tesote system"
     )
 
+    balance_data_current_as_of = fields.Datetime(
+        string="Balance As Of",
+        readonly=True,
+        help="Timestamp when balance data was last updated in Tesote",
+    )
+
     transaction_ids = fields.One2many("tesote.transaction", "account_id", string="Transactions")
 
     transaction_count = fields.Integer(
@@ -196,16 +202,16 @@ class TesoteAccount(models.Model):
             "tesote_updated_at": self._parse_tesote_datetime(data.get("tesote_updated_at")),
         }
 
-        # Set balance if available - check multiple possible field names
-        balance = (
-            data.get("balance")
-            or data.get("current_balance")
-            or data.get("available_balance")
-            or data.get("balance_amount")
-            or 0.0
-        )
-        if balance:
-            vals["balance"] = float(balance)
+        # Set balance if available - API returns balance_cents, convert to dollars
+        balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
+        if balance_cents is not None:
+            vals["balance"] = float(balance_cents) / 100.0
+
+        # Store balance timestamp if available
+        if "balance_data_current_as_of" in data:
+            vals["balance_data_current_as_of"] = self._parse_tesote_datetime(
+                data.get("balance_data_current_as_of")
+            )
 
         # Set currency if available
         if "currency" in data:
@@ -232,16 +238,16 @@ class TesoteAccount(models.Model):
             "tesote_updated_at": self._parse_tesote_datetime(data.get("tesote_updated_at")),
         }
 
-        # Update balance if available - check multiple possible field names
-        balance = (
-            data.get("balance")
-            or data.get("current_balance")
-            or data.get("available_balance")
-            or data.get("balance_amount")
-            or 0.0
-        )
-        if balance:
-            vals["balance"] = float(balance)
+        # Update balance if available - API returns balance_cents, convert to dollars
+        balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
+        if balance_cents is not None:
+            vals["balance"] = float(balance_cents) / 100.0
+
+        # Update balance timestamp if available
+        if "balance_data_current_as_of" in data:
+            vals["balance_data_current_as_of"] = self._parse_tesote_datetime(
+                data.get("balance_data_current_as_of")
+            )
 
         # Update currency if available
         if "currency" in data:
