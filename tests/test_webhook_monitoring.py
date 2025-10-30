@@ -329,10 +329,10 @@ def test_alert_notification_content():
     subject = f"[Alert] High Webhook Failure Rate - {alert['backend']}"
     body = f"""
         High webhook failure rate detected:
-        - Backend: {alert['backend']}
-        - Failure Rate: {alert['failure_rate']:.2f}%
-        - Threshold: {alert['threshold']:.2f}%
-        - Time: {alert['date']} {alert['hour']}:00
+        - Backend: {alert["backend"]}
+        - Failure Rate: {alert["failure_rate"]:.2f}%
+        - Threshold: {alert["threshold"]:.2f}%
+        - Time: {alert["date"]} {alert["hour"]}:00
     """
 
     assert "[Alert]" in subject
@@ -353,9 +353,9 @@ def test_alert_notification_content():
     subject = f"[Alert] Multiple Webhook Signature Failures - {alert['backend']}"
     body = f"""
         Multiple webhook signature validation failures detected:
-        - Backend: {alert['backend']}
-        - Failed Signatures: {alert['count']}
-        - Time: {alert['date']} {alert['hour']}:00
+        - Backend: {alert["backend"]}
+        - Failed Signatures: {alert["count"]}
+        - Time: {alert["date"]} {alert["hour"]}:00
         Please check your webhook secret configuration.
     """
 

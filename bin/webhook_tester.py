@@ -393,7 +393,7 @@ class WebhookTester:
                     }
                 )
 
-                print(f"  [{i+1}/{count}] {event_type}: {status} ({response.status_code})")
+                print(f"  [{i + 1}/{count}] {event_type}: {status} ({response.status_code})")
 
             except Exception as e:
                 results["failed"] += 1
@@ -405,7 +405,7 @@ class WebhookTester:
                         "error": str(e),
                     }
                 )
-                print(f"  [{i+1}/{count}] {event_type}: ERROR ({e})")
+                print(f"  [{i + 1}/{count}] {event_type}: ERROR ({e})")
 
             if i < count - 1:
                 time.sleep(delay)
@@ -413,8 +413,8 @@ class WebhookTester:
         # Print summary
         print("\nBatch complete:")
         print(f"  Total: {results['total']}")
-        print(f"  Successful: {results['successful']} ({results['successful']/count*100:.1f}%)")
-        print(f"  Failed: {results['failed']} ({results['failed']/count*100:.1f}%)")
+        print(f"  Successful: {results['successful']} ({results['successful'] / count * 100:.1f}%)")
+        print(f"  Failed: {results['failed']} ({results['failed'] / count * 100:.1f}%)")
 
         return results
 

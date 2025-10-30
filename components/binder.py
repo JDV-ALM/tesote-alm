@@ -47,9 +47,7 @@ class TesoteBinder:
                     "backend_id": self.backend_id,
                 }
             )
-            _logger.debug(
-                f"Bound {self.model_name} Tesote ID {external_id} " f"to Odoo ID {odoo_id}"
-            )
+            _logger.debug(f"Bound {self.model_name} Tesote ID {external_id} to Odoo ID {odoo_id}")
 
     def unbind(self, external_id: str) -> None:
         """
@@ -127,7 +125,5 @@ class TesoteBinder:
         values["tesote_id"] = external_id
         values["backend_id"] = self.backend_id
         record = self.model.create(values)
-        _logger.info(
-            f"Created new {self.model_name} ID {record.id} " f"for Tesote ID {external_id}"
-        )
+        _logger.info(f"Created new {self.model_name} ID {record.id} for Tesote ID {external_id}")
         return record.id, True

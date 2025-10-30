@@ -281,7 +281,7 @@ class TesoteAdapter:
         removed = len(result.get("removed", []))
 
         _logger.info(
-            f"Sync result: {added} added, {modified} modified, " f"{removed} removed transactions"
+            f"Sync result: {added} added, {modified} modified, {removed} removed transactions"
         )
 
         return result

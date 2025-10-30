@@ -312,7 +312,7 @@ class TesoteBackend(models.Model):
                     or "Production"
                 )
 
-                message = _("Connection successful!\n" "Client: %s\n" "Environment: %s") % (
+                message = _("Connection successful!\nClient: %s\nEnvironment: %s") % (
                     client_name,
                     environment,
                 )
@@ -814,8 +814,7 @@ class TesoteBackend(models.Model):
                 account.sync_cursor = sync_result["next_cursor"]
 
             _logger.info(
-                f"Synced account {account.name}: "
-                f"+{added_count} ~{modified_count} -{removed_count}"
+                f"Synced account {account.name}: +{added_count} ~{modified_count} -{removed_count}"
             )
 
         self.last_sync_date = fields.Datetime.now()

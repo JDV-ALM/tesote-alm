@@ -175,8 +175,8 @@ class BaseMigration(ABC):
             values = [f"'{v}'" if isinstance(v, str) else str(v) for v in record.values()]
 
             sql = f"""
-            INSERT INTO {table_name} ({', '.join(columns)})
-            VALUES ({', '.join(values)})
+            INSERT INTO {table_name} ({", ".join(columns)})
+            VALUES ({", ".join(values)})
             ON CONFLICT DO NOTHING
             """
             self.execute(sql)
