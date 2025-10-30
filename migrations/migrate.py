@@ -17,17 +17,17 @@ def migrate(cr, version):
     This replaces the traditional pre-migration.py and post-migration.py files
     """
     _logger.info(f"Starting tesote_connector migrations to version {version}")
-    
+
     try:
         # Run all pending migrations
         MigrationCommands.migrate(cr)
-        
+
         # Show final status
         _logger.info("Migration status:")
         MigrationCommands.status(cr)
-        
+
         _logger.info(f"Completed tesote_connector migrations to version {version}")
-        
+
     except Exception as e:
         _logger.error(f"Migration failed: {e}")
         raise

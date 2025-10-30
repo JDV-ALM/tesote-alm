@@ -121,7 +121,7 @@
         <field name="state">code</field>
         <field name="code">action = model.action_open_configuration()</field>
     </record>
-    
+
     <!-- Keep the old action for compatibility but redirect it -->
     <record id="action_tesote_webhook_config" model="ir.actions.act_window">
         <field name="name">Webhook Configuration</field>

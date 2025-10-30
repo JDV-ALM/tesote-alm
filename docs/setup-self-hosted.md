@@ -26,7 +26,7 @@ cat /etc/odoo/odoo.conf | grep addons_path
 
 # Common addon directories:
 ls /opt/odoo/addons/          # Custom installation
-ls /var/lib/odoo/addons/      # Package installation  
+ls /var/lib/odoo/addons/      # Package installation
 ls /usr/lib/python3/dist-packages/odoo/addons/  # System installation
 ```
 

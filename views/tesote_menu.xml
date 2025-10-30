@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Main Menu -->
-    <menuitem 
+    <menuitem
         id="menu_tesote_root"
         name="Tesote"
         sequence="50"
         web_icon="tesote_connector,static/description/icon.png"/>
-    
+
     <!-- Configuration Menu -->
     <menuitem
         id="menu_tesote_configuration"
         name="Configuration"
         parent="menu_tesote_root"
         sequence="100"/>
-    
+
     <!-- API Configuration Menu - Opens singleton configuration -->
     <menuitem
         id="menu_tesote_backend"
@@ -21,7 +21,7 @@
         parent="menu_tesote_configuration"
         action="action_tesote_backend_open"
         sequence="10"/>
-    
+
     <!-- Sync Logs Menu -->
     <menuitem
         id="menu_tesote_sync_log"
@@ -29,7 +29,7 @@
         parent="menu_tesote_configuration"
         action="action_tesote_sync_log"
         sequence="20"/>
-    
+
     <!-- Webhook Configuration Menu -->
     <menuitem
         id="menu_tesote_webhook_config"
@@ -38,14 +38,14 @@
         action="action_tesote_webhook_config_open"
         sequence="30"
         groups="account.group_account_manager"/>
-    
+
     <!-- Data Menu -->
     <menuitem
         id="menu_tesote_data"
         name="Financial Data"
         parent="menu_tesote_root"
         sequence="10"/>
-    
+
     <!-- Accounts Menu -->
     <menuitem
         id="menu_tesote_account"
@@ -53,7 +53,7 @@
         parent="menu_tesote_data"
         action="action_tesote_account"
         sequence="10"/>
-    
+
     <!-- Transactions Menu -->
     <menuitem
         id="menu_tesote_transaction"
@@ -61,7 +61,7 @@
         parent="menu_tesote_data"
         action="action_tesote_transaction"
         sequence="20"/>
-    
+
     <!-- Webhooks Menu -->
     <menuitem
         id="menu_tesote_webhook"
@@ -69,7 +69,7 @@
         parent="menu_tesote_root"
         sequence="40"
         groups="account.group_account_manager"/>
-    
+
     <!-- Webhook Events Dashboard -->
     <menuitem
         id="menu_tesote_webhook_events"
@@ -100,7 +100,7 @@
         name="Reports"
         parent="menu_tesote_root"
         sequence="50"/>
-    
+
     <!-- Transaction Analysis -->
     <menuitem
         id="menu_tesote_transaction_analysis"

@@ -36,7 +36,7 @@
                     <widget name="web_ribbon" title="Warning" bg_color="text-bg-warning" invisible="status != 'warning'"/>
                     <widget name="web_ribbon" title="Error" bg_color="text-bg-danger" invisible="status != 'error'"/>
                     <widget name="web_ribbon" title="In Progress" bg_color="text-bg-info" invisible="status != 'in_progress'"/>
-                    
+
                     <group>
                         <group string="Operation Details">
                             <field name="backend_id"/>
@@ -52,7 +52,7 @@
                             <field name="duration" widget="float_time"/>
                         </group>
                     </group>
-                    
+
                     <group string="Sync Results" invisible="operation not in ('sync_transactions', 'import_accounts', 'sync_single_account')">
                         <group>
                             <field name="records_added"/>
@@ -65,11 +65,11 @@
                             <field name="cursor_after" invisible="not cursor_after"/>
                         </group>
                     </group>
-                    
+
                     <group string="Details" invisible="not details">
                         <field name="details" nolabel="1" colspan="2"/>
                     </group>
-                    
+
                     <group string="Error Information" invisible="status != 'error'">
                         <field name="error_message" nolabel="1" colspan="2" class="text-danger"/>
                     </group>

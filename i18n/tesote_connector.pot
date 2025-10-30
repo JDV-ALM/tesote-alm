@@ -443,4 +443,3 @@ msgstr ""
 #: model:ir.ui.view,arch_db:tesote_connector.view_tesote_webhook_event_form
 msgid "Event Details"
 msgstr ""
-

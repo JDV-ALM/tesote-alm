@@ -18,15 +18,16 @@ Usage:
 """
 
 import argparse
-import json
-import hmac
 import hashlib
+import hmac
+import json
+import random
 import time
 import uuid
-import requests
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional
-import random
+from typing import Any
+
+import requests
 
 
 class WebhookTester:
@@ -44,7 +45,7 @@ class WebhookTester:
         self.secret_key = secret_key
         self.verbose = verbose
 
-    def generate_signature(self, payload: Dict[str, Any], timestamp: str) -> str:
+    def generate_signature(self, payload: dict[str, Any], timestamp: str) -> str:
         """Generate HMAC-SHA256 signature.
 
         Args:
@@ -54,12 +55,10 @@ class WebhookTester:
         Returns:
             Formatted signature string
         """
-        payload_str = json.dumps(payload, separators=(',', ':'), sort_keys=True)
+        payload_str = json.dumps(payload, separators=(",", ":"), sort_keys=True)
         signed_payload = f"{timestamp}.{payload_str}"
         signature = hmac.new(
-            self.secret_key.encode(),
-            signed_payload.encode(),
-            hashlib.sha256
+            self.secret_key.encode(), signed_payload.encode(), hashlib.sha256
         ).hexdigest()
         return f"t={timestamp},v1={signature}"
 
@@ -67,7 +66,7 @@ class WebhookTester:
         """Generate a unique webhook event ID."""
         return f"whd_{uuid.uuid4().hex[:12]}"
 
-    def create_sync_updates_payload(self, account_id: Optional[str] = None) -> Dict[str, Any]:
+    def create_sync_updates_payload(self, account_id: str | None = None) -> dict[str, Any]:
         """Create a sync.updates_available webhook payload.
 
         Args:
@@ -97,12 +96,12 @@ class WebhookTester:
                 "removed_transactions": len(removed_ids),
                 "api_sync_cursor": {
                     "sync_from": "2023-08-20T10:30:00Z",
-                    "sync_to": datetime.now(timezone.utc).isoformat()
-                }
-            }
+                    "sync_to": datetime.now(timezone.utc).isoformat(),
+                },
+            },
         }
 
-    def create_account_created_payload(self, account_id: Optional[str] = None) -> Dict[str, Any]:
+    def create_account_created_payload(self, account_id: str | None = None) -> dict[str, Any]:
         """Create an accounts.created webhook payload.
 
         Args:
@@ -124,11 +123,11 @@ class WebhookTester:
                 "currency": random.choice(["USD", "EUR", "GBP", "MXN"]),
                 "balance": round(random.uniform(100, 10000), 2),
                 "type": random.choice(["depository", "credit", "investment"]),
-                "subtype": random.choice(["checking", "savings", "credit_card"])
-            }
+                "subtype": random.choice(["checking", "savings", "credit_card"]),
+            },
         }
 
-    def create_account_updated_payload(self, account_id: Optional[str] = None) -> Dict[str, Any]:
+    def create_account_updated_payload(self, account_id: str | None = None) -> dict[str, Any]:
         """Create an accounts.updated webhook payload.
 
         Args:
@@ -147,11 +146,13 @@ class WebhookTester:
                 "id": account_id,
                 "balance": round(random.uniform(100, 10000), 2),
                 "updated_fields": ["balance", "name"],
-                "name": f"Updated Account {random.randint(1000, 9999)}"
-            }
+                "name": f"Updated Account {random.randint(1000, 9999)}",
+            },
         }
 
-    def create_transaction_state_changed_payload(self, transaction_id: Optional[str] = None) -> Dict[str, Any]:
+    def create_transaction_state_changed_payload(
+        self, transaction_id: str | None = None
+    ) -> dict[str, Any]:
         """Create a transactions.state_changed webhook payload.
 
         Args:
@@ -172,14 +173,17 @@ class WebhookTester:
                 "state": "completed",
                 "account_id": f"acc_{uuid.uuid4().hex[:8]}",
                 "amount": round(random.uniform(10, 1000), 2),
-                "aged_at": datetime.now(timezone.utc).isoformat()
-            }
+                "aged_at": datetime.now(timezone.utc).isoformat(),
+            },
         }
 
-    def send_webhook(self, payload: Dict[str, Any],
-                     invalid_signature: bool = False,
-                     missing_headers: bool = False,
-                     timeout: Optional[int] = None) -> requests.Response:
+    def send_webhook(
+        self,
+        payload: dict[str, Any],
+        invalid_signature: bool = False,
+        missing_headers: bool = False,
+        timeout: int | None = None,
+    ) -> requests.Response:
         """Send a webhook request.
 
         Args:
@@ -200,14 +204,11 @@ class WebhookTester:
             signature = self.generate_signature(payload, timestamp)
 
         # Prepare headers
-        headers = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Tesote-Webhook-Tester/1.0'
-        }
+        headers = {"Content-Type": "application/json", "User-Agent": "Tesote-Webhook-Tester/1.0"}
 
         if not missing_headers:
-            headers['X-Tesote-Webhook-Signature'] = signature
-            headers['X-Tesote-Webhook-Id'] = payload.get('id', 'test_webhook')
+            headers["X-Tesote-Webhook-Signature"] = signature
+            headers["X-Tesote-Webhook-Id"] = payload.get("id", "test_webhook")
 
         # Prepare request
         if self.verbose:
@@ -224,10 +225,7 @@ class WebhookTester:
         # Send request
         try:
             response = requests.post(
-                self.webhook_url,
-                json=payload,
-                headers=headers,
-                timeout=timeout or 10
+                self.webhook_url, json=payload, headers=headers, timeout=timeout or 10
             )
 
             if self.verbose:
@@ -245,7 +243,7 @@ class WebhookTester:
                 print(f"Request failed: {e}")
             raise
 
-    def test_event_type(self, event_type: str, account_id: Optional[str] = None) -> bool:
+    def test_event_type(self, event_type: str, account_id: str | None = None) -> bool:
         """Test a specific webhook event type.
 
         Args:
@@ -256,13 +254,13 @@ class WebhookTester:
             True if successful, False otherwise
         """
         # Create payload based on event type
-        if event_type == 'sync.updates_available':
+        if event_type == "sync.updates_available":
             payload = self.create_sync_updates_payload(account_id)
-        elif event_type == 'accounts.created':
+        elif event_type == "accounts.created":
             payload = self.create_account_created_payload(account_id)
-        elif event_type == 'accounts.updated':
+        elif event_type == "accounts.updated":
             payload = self.create_account_updated_payload(account_id)
-        elif event_type == 'transactions.state_changed':
+        elif event_type == "transactions.state_changed":
             payload = self.create_transaction_state_changed_payload()
         else:
             print(f"Unknown event type: {event_type}")
@@ -276,7 +274,7 @@ class WebhookTester:
             print(f"Test failed: {e}")
             return False
 
-    def test_error_scenarios(self) -> Dict[str, bool]:
+    def test_error_scenarios(self) -> dict[str, bool]:
         """Test various error scenarios.
 
         Returns:
@@ -289,10 +287,12 @@ class WebhookTester:
         payload = self.create_sync_updates_payload()
         try:
             response = self.send_webhook(payload, invalid_signature=True)
-            results['invalid_signature'] = response.status_code == 401
-            print(f"  Result: {'PASS' if results['invalid_signature'] else 'FAIL'} (Status: {response.status_code})")
+            results["invalid_signature"] = response.status_code == 401
+            print(
+                f"  Result: {'PASS' if results['invalid_signature'] else 'FAIL'} (Status: {response.status_code})"
+            )
         except Exception:
-            results['invalid_signature'] = False
+            results["invalid_signature"] = False
             print("  Result: FAIL (Exception)")
 
         # Test missing headers
@@ -300,10 +300,12 @@ class WebhookTester:
         payload = self.create_sync_updates_payload()
         try:
             response = self.send_webhook(payload, missing_headers=True)
-            results['missing_headers'] = response.status_code in [400, 401]
-            print(f"  Result: {'PASS' if results['missing_headers'] else 'FAIL'} (Status: {response.status_code})")
+            results["missing_headers"] = response.status_code in [400, 401]
+            print(
+                f"  Result: {'PASS' if results['missing_headers'] else 'FAIL'} (Status: {response.status_code})"
+            )
         except Exception:
-            results['missing_headers'] = False
+            results["missing_headers"] = False
             print("  Result: FAIL (Exception)")
 
         # Test malformed JSON
@@ -312,13 +314,15 @@ class WebhookTester:
             response = requests.post(
                 self.webhook_url,
                 data='{"invalid": json}',
-                headers={'Content-Type': 'application/json'},
-                timeout=5
+                headers={"Content-Type": "application/json"},
+                timeout=5,
             )
-            results['malformed_json'] = response.status_code == 400
-            print(f"  Result: {'PASS' if results['malformed_json'] else 'FAIL'} (Status: {response.status_code})")
+            results["malformed_json"] = response.status_code == 400
+            print(
+                f"  Result: {'PASS' if results['malformed_json'] else 'FAIL'} (Status: {response.status_code})"
+            )
         except Exception:
-            results['malformed_json'] = False
+            results["malformed_json"] = False
             print("  Result: FAIL (Exception)")
 
         # Test duplicate webhook (send same webhook twice)
@@ -328,16 +332,16 @@ class WebhookTester:
             response1 = self.send_webhook(payload)
             time.sleep(1)  # Small delay
             response2 = self.send_webhook(payload)
-            results['idempotency'] = (response1.status_code == 200 and response2.status_code == 200)
+            results["idempotency"] = response1.status_code == 200 and response2.status_code == 200
             status_msg = f"(Status: {response1.status_code}, {response2.status_code})"
             print(f"  Result: {'PASS' if results['idempotency'] else 'FAIL'} {status_msg}")
         except Exception:
-            results['idempotency'] = False
+            results["idempotency"] = False
             print("  Result: FAIL (Exception)")
 
         return results
 
-    def send_batch(self, count: int, delay: float = 0.5) -> Dict[str, Any]:
+    def send_batch(self, count: int, delay: float = 0.5) -> dict[str, Any]:
         """Send a batch of webhook events.
 
         Args:
@@ -347,31 +351,26 @@ class WebhookTester:
         Returns:
             Summary of results
         """
-        results = {
-            'total': count,
-            'successful': 0,
-            'failed': 0,
-            'events': []
-        }
+        results = {"total": count, "successful": 0, "failed": 0, "events": []}
 
         print(f"\nSending batch of {count} webhooks...")
 
         for i in range(count):
             # Randomly select event type
             event_types = [
-                'sync.updates_available',
-                'accounts.created',
-                'accounts.updated',
-                'transactions.state_changed'
+                "sync.updates_available",
+                "accounts.created",
+                "accounts.updated",
+                "transactions.state_changed",
             ]
             event_type = random.choice(event_types)
 
             # Create and send webhook
-            if event_type == 'sync.updates_available':
+            if event_type == "sync.updates_available":
                 payload = self.create_sync_updates_payload()
-            elif event_type == 'accounts.created':
+            elif event_type == "accounts.created":
                 payload = self.create_account_created_payload()
-            elif event_type == 'accounts.updated':
+            elif event_type == "accounts.updated":
                 payload = self.create_account_updated_payload()
             else:
                 payload = self.create_transaction_state_changed_payload()
@@ -379,29 +378,33 @@ class WebhookTester:
             try:
                 response = self.send_webhook(payload)
                 if response.status_code == 200:
-                    results['successful'] += 1
-                    status = 'SUCCESS'
+                    results["successful"] += 1
+                    status = "SUCCESS"
                 else:
-                    results['failed'] += 1
-                    status = 'FAILED'
+                    results["failed"] += 1
+                    status = "FAILED"
 
-                results['events'].append({
-                    'event_id': payload['id'],
-                    'event_type': event_type,
-                    'status': status,
-                    'status_code': response.status_code
-                })
+                results["events"].append(
+                    {
+                        "event_id": payload["id"],
+                        "event_type": event_type,
+                        "status": status,
+                        "status_code": response.status_code,
+                    }
+                )
 
                 print(f"  [{i+1}/{count}] {event_type}: {status} ({response.status_code})")
 
             except Exception as e:
-                results['failed'] += 1
-                results['events'].append({
-                    'event_id': payload['id'],
-                    'event_type': event_type,
-                    'status': 'ERROR',
-                    'error': str(e)
-                })
+                results["failed"] += 1
+                results["events"].append(
+                    {
+                        "event_id": payload["id"],
+                        "event_type": event_type,
+                        "status": "ERROR",
+                        "error": str(e),
+                    }
+                )
                 print(f"  [{i+1}/{count}] {event_type}: ERROR ({e})")
 
             if i < count - 1:
@@ -430,9 +433,7 @@ class WebhookTester:
         # For testing, we'll just make a simple API call
         try:
             response = requests.get(
-                f"{api_url}/webhook/events/{event_id}",
-                headers={'X-API-Key': api_key},
-                timeout=5
+                f"{api_url}/webhook/events/{event_id}", headers={"X-API-Key": api_key}, timeout=5
             )
             return response.status_code == 200
         except Exception:
@@ -441,18 +442,20 @@ class WebhookTester:
 
 def main():
     """Main entry point for webhook tester."""
-    parser = argparse.ArgumentParser(description='Tesote Webhook Testing Tool')
-    parser.add_argument('--url', required=True, help='Webhook endpoint URL')
-    parser.add_argument('--secret', required=True, help='Webhook secret key')
-    parser.add_argument('--event', help='Event type to test')
-    parser.add_argument('--account-id', help='Account ID to use in payload')
-    parser.add_argument('--transaction-id', help='Transaction ID to use in payload')
-    parser.add_argument('--batch', type=int, help='Send batch of N webhooks')
-    parser.add_argument('--delay', type=float, default=0.5, help='Delay between batch webhooks (seconds)')
-    parser.add_argument('--test-errors', action='store_true', help='Test error scenarios')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
-    parser.add_argument('--invalid-signature', action='store_true', help='Send invalid signature')
-    parser.add_argument('--missing-headers', action='store_true', help='Omit required headers')
+    parser = argparse.ArgumentParser(description="Tesote Webhook Testing Tool")
+    parser.add_argument("--url", required=True, help="Webhook endpoint URL")
+    parser.add_argument("--secret", required=True, help="Webhook secret key")
+    parser.add_argument("--event", help="Event type to test")
+    parser.add_argument("--account-id", help="Account ID to use in payload")
+    parser.add_argument("--transaction-id", help="Transaction ID to use in payload")
+    parser.add_argument("--batch", type=int, help="Send batch of N webhooks")
+    parser.add_argument(
+        "--delay", type=float, default=0.5, help="Delay between batch webhooks (seconds)"
+    )
+    parser.add_argument("--test-errors", action="store_true", help="Test error scenarios")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument("--invalid-signature", action="store_true", help="Send invalid signature")
+    parser.add_argument("--missing-headers", action="store_true", help="Omit required headers")
 
     args = parser.parse_args()
 
@@ -481,13 +484,11 @@ def main():
 
         # Apply test modifiers
         response = tester.send_webhook(
-            payload,
-            invalid_signature=args.invalid_signature,
-            missing_headers=args.missing_headers
+            payload, invalid_signature=args.invalid_signature, missing_headers=args.missing_headers
         )
 
         print(f"\nResult: {'SUCCESS' if response.status_code == 200 else 'FAILED'}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

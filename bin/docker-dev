@@ -33,21 +33,21 @@ print_info() {
 cmd_up() {
     print_info "Starting Odoo development environment..."
     docker compose up -d
-    
+
     print_info "Waiting for services to be healthy..."
     sleep 5
-    
+
     # Wait for Odoo to be ready
     while ! docker compose exec -T odoo curl -s http://localhost:8069/web/health > /dev/null 2>&1; do
         echo -n "."
         sleep 2
     done
     echo ""
-    
+
     print_success "Odoo is running at http://localhost:8069"
     print_info "Default credentials: admin / admin"
     print_info "Database: tesote_dev"
-    
+
     if [ "$1" == "--logs" ]; then
         docker compose logs -f
     fi
@@ -119,10 +119,10 @@ cmd_backup() {
     print_info "Creating database backup..."
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     BACKUP_FILE="backups/tesote_dev_${TIMESTAMP}.sql"
-    
+
     mkdir -p backups
     docker compose exec -T db pg_dump -U odoo tesote_dev > "$BACKUP_FILE"
-    
+
     if [ -f "$BACKUP_FILE" ]; then
         print_success "Backup created: $BACKUP_FILE"
     else
@@ -135,12 +135,12 @@ cmd_restore() {
         print_error "Usage: ./bin/docker-dev restore <backup_file>"
         exit 1
     fi
-    
+
     if [ ! -f "$1" ]; then
         print_error "Backup file not found: $1"
         exit 1
     fi
-    
+
     print_info "Restoring database from $1..."
     docker compose exec -T db psql -U odoo tesote_dev < "$1"
     print_success "Database restored"
@@ -151,14 +151,14 @@ cmd_status() {
     echo ""
     docker compose ps
     echo ""
-    
+
     # Check Odoo health
     if docker compose exec -T odoo curl -s http://localhost:8069/web/health > /dev/null 2>&1; then
         print_success "Odoo is healthy"
     else
         print_error "Odoo is not responding"
     fi
-    
+
     # Check database
     if docker compose exec -T db pg_isready -U odoo > /dev/null 2>&1; then
         print_success "PostgreSQL is healthy"

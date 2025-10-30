@@ -13,7 +13,7 @@
         <field name="active">False</field>
         <field name="user_id" ref="base.user_root"/>
     </record>
-    
+
     <!-- Scheduled Account Import (runs less frequently) -->
     <record id="ir_cron_tesote_import_accounts" model="ir.cron">
         <field name="name">Tesote: Import Accounts</field>
