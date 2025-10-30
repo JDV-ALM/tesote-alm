@@ -155,9 +155,9 @@ class TesoteBackend(models.Model):
         # Fallback to hardcoded version
         return "18.0.1.0.0"
 
-    @api.model
-    def create(self, vals):
-        """Override create to ensure only one backend exists."""
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to ensure only one backend exists (batch-compatible)."""
         existing = self.search([("id", "!=", 0)], limit=1)
         if existing:
             raise UserError(
@@ -165,7 +165,7 @@ class TesoteBackend(models.Model):
                     "Only one Tesote Backend configuration is allowed. Please edit the existing configuration."
                 )
             )
-        return super(TesoteBackend, self).create(vals)
+        return super(TesoteBackend, self).create(vals_list)
 
     @api.constrains("active")
     def _check_single_backend(self):
