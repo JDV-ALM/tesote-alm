@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test runner for Tesote Odoo API Connector
-# Runs all tests without requiring Odoo installation
+# Runs all tests without requiring Odoo installation using uv
 
 set -e  # Exit on error
 
@@ -15,41 +15,32 @@ print_color() {
     echo -e "${2}${1}${NC}"
 }
 
-# Check Python version
-check_python() {
-    if command -v python3 &> /dev/null; then
-        PYTHON_CMD="python3"
-    elif command -v python &> /dev/null; then
-        PYTHON_CMD="python"
-    else
-        print_color "Error: Python not found. Please install Python 3.6+" "$RED"
+# Check uv is installed
+check_uv() {
+    if ! command -v uv &> /dev/null; then
+        print_color "Error: uv not found. Please install uv:" "$RED"
+        echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
         exit 1
     fi
-    
-    print_color "Using Python: $PYTHON_CMD" "$GREEN"
+
+    print_color "Using uv: $(uv --version)" "$GREEN"
 }
 
-# Install test dependencies
-install_deps() {
-    print_color "Installing test dependencies..." "$YELLOW"
-    $PYTHON_CMD -m pip install --quiet \
-        pytest>=7.0.0 \
-        pytest-cov>=4.0.0 \
-        pytest-mock>=3.10.0 \
-        responses>=0.22.0 \
-        freezegun>=1.2.0 \
-        2>/dev/null || {
-            print_color "Warning: Could not install all dependencies" "$YELLOW"
-        }
+# Sync dependencies (replaces install_deps)
+sync_deps() {
+    print_color "Syncing dependencies with uv..." "$YELLOW"
+    uv sync --dev --quiet || {
+        print_color "Warning: Could not sync all dependencies" "$YELLOW"
+    }
 }
 
 # Run standalone tests (no Odoo required)
 run_standalone() {
     print_color "\n=== Running Standalone Tests (No Odoo Required) ===" "$GREEN"
-    
+
     if [ -f "test_standalone.py" ]; then
         print_color "Running test_standalone.py..." "$YELLOW"
-        $PYTHON_CMD test_standalone.py
+        uv run python test_standalone.py
         if [ $? -eq 0 ]; then
             print_color "✓ Standalone tests passed" "$GREEN"
         else
@@ -62,19 +53,13 @@ run_standalone() {
 # Run pytest tests
 run_pytest() {
     print_color "\n=== Running Pytest Tests ===" "$GREEN"
-    
-    # Check if pytest is installed
-    if ! $PYTHON_CMD -m pytest --version &> /dev/null; then
-        print_color "pytest not found, installing..." "$YELLOW"
-        install_deps
-    fi
-    
+
     # Use our custom test runner that properly mocks Odoo
     if [ -f "run_tests.py" ]; then
         print_color "Running tesote_connector tests with Odoo mocks..." "$YELLOW"
-        
-        $PYTHON_CMD run_tests.py
-        
+
+        uv run python run_tests.py
+
         if [ $? -eq 0 ]; then
             print_color "✓ Pytest tests passed" "$GREEN"
         else
@@ -83,32 +68,28 @@ run_pytest() {
         fi
     else
         print_color "No run_tests.py found, falling back to direct pytest" "$YELLOW"
-        
+
         # Run tests with coverage if available
-        if [ -d "tesote_connector/tests" ]; then
+        if [ -d "tests" ]; then
             # Set PYTHONPATH to include current directory
             export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-            
-            # Run with coverage if available, otherwise just run tests
-            if $PYTHON_CMD -m pytest --version &> /dev/null; then
-                $PYTHON_CMD -m pytest tesote_connector/tests/ -v \
-                    --color=yes \
-                    ${COVERAGE:+--cov=tesote_connector --cov-report=term-missing} \
-                    ${VERBOSE:+-vv} \
-                    ${FAILFAST:+-x} \
-                    "$@"
-                
-                if [ $? -eq 0 ]; then
-                    print_color "✓ Pytest tests passed" "$GREEN"
-                else
-                    print_color "✗ Pytest tests failed" "$RED"
-                    return 1
-                fi
+
+            # Build pytest command with options
+            PYTEST_ARGS="tests/ -v --color=yes"
+            ${COVERAGE:+PYTEST_ARGS="$PYTEST_ARGS --cov=. --cov-report=term-missing"}
+            ${VERBOSE:+PYTEST_ARGS="$PYTEST_ARGS -vv"}
+            ${FAILFAST:+PYTEST_ARGS="$PYTEST_ARGS -x"}
+
+            uv run pytest $PYTEST_ARGS "$@"
+
+            if [ $? -eq 0 ]; then
+                print_color "✓ Pytest tests passed" "$GREEN"
             else
-                print_color "Warning: pytest not available, skipping pytest tests" "$YELLOW"
+                print_color "✗ Pytest tests failed" "$RED"
+                return 1
             fi
         else
-            print_color "No pytest tests found in tesote_connector/tests/" "$YELLOW"
+            print_color "No pytest tests found in tests/" "$YELLOW"
         fi
     fi
 }
@@ -117,37 +98,37 @@ run_pytest() {
 run_all() {
     print_color "=== Tesote Odoo API Connector Test Suite ===" "$GREEN"
     print_color "Running all tests...\n" "$YELLOW"
-    
+
     local standalone_status=0
     local pytest_status=0
-    
+
     # Run standalone tests
     run_standalone
     standalone_status=$?
-    
+
     # Run pytest tests
     run_pytest
     pytest_status=$?
-    
+
     # Summary
     echo ""
     print_color "===================================" "$GREEN"
     print_color "TEST SUMMARY:" "$YELLOW"
-    
+
     if [ $standalone_status -eq 0 ]; then
         print_color "  ✓ Standalone tests: PASSED" "$GREEN"
     else
         print_color "  ✗ Standalone tests: FAILED" "$RED"
     fi
-    
+
     if [ $pytest_status -eq 0 ]; then
         print_color "  ✓ Pytest tests: PASSED" "$GREEN"
     else
         print_color "  ✗ Pytest tests: FAILED (some tests need Odoo)" "$YELLOW"
     fi
-    
+
     print_color "===================================" "$GREEN"
-    
+
     if [ $standalone_status -eq 0 ] && [ $pytest_status -eq 0 ]; then
         print_color "✓ ALL TESTS PASSED" "$GREEN"
         return 0
@@ -166,7 +147,7 @@ show_help() {
     cat << EOF
 Usage: bin/test [OPTIONS]
 
-Run tests for Tesote Odoo API Connector
+Run tests for Tesote Odoo API Connector using uv
 
 Options:
     -h, --help      Show this help message
@@ -175,7 +156,7 @@ Options:
     -x, --failfast  Stop on first test failure
     -s, --standalone Run only standalone tests
     -p, --pytest    Run only pytest tests
-    -i, --install   Install test dependencies
+    -i, --install   Sync test dependencies with uv
 
 Environment Variables:
     VERBOSE=1       Enable verbose output
@@ -188,7 +169,8 @@ Examples:
     bin/test -c                 # Run with coverage
     bin/test -s                 # Run only standalone tests
     bin/test -p                 # Run only pytest tests
-    bin/test test_adapter.py    # Run specific test file
+    bin/test -i                 # Sync dependencies
+    bin/test tests/test_adapter.py  # Run specific test file
 
 EOF
 }
@@ -213,18 +195,18 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -s|--standalone)
-            check_python
+            check_uv
             run_standalone
             exit $?
             ;;
         -p|--pytest)
-            check_python
+            check_uv
             run_pytest
             exit $?
             ;;
         -i|--install)
-            check_python
-            install_deps
+            check_uv
+            sync_deps
             exit 0
             ;;
         *)
@@ -235,6 +217,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Main execution
-check_python
+check_uv
 run_all "$@"
 exit $?
