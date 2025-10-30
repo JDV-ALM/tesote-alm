@@ -809,9 +809,12 @@ class TesoteBackend(models.Model):
             # Process transactions
             self._process_sync_results(account, sync_result)
 
-            # Update cursor for next sync
+            # Update cursor and sync date for next sync
             if sync_result.get("next_cursor"):
                 account.sync_cursor = sync_result["next_cursor"]
+
+            # Update account sync date
+            account.sync_date = fields.Datetime.now()
 
             _logger.info(
                 f"Synced account {account.name}: +{added_count} ~{modified_count} -{removed_count}"

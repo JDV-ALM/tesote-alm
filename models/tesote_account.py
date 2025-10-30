@@ -78,9 +78,9 @@ class TesoteAccount(models.Model):
 
     transaction_ids = fields.One2many("tesote.transaction", "account_id", string="Transactions")
 
-    transaction_count = fields.Integer(
-        string="Transaction Count", compute="_compute_transaction_count"
-    )
+    sync_cursor = fields.Char(string="Sync Cursor", help="Cursor for incremental transaction sync")
+
+    sync_date = fields.Datetime(string="Last Sync", help="Last successful transaction sync date")
 
     active = fields.Boolean(string="Active", default=True)
 
@@ -240,9 +240,10 @@ class TesoteAccount(models.Model):
         if balance_timestamp:
             vals["balance_data_current_as_of"] = self._parse_tesote_datetime(balance_timestamp)
 
-        # Set currency if available
-        if "currency" in data:
-            currency = self.env["res.currency"].search([("name", "=", data["currency"])], limit=1)
+        # Set currency if available - check nested data first
+        currency_code = nested_data.get("currency") or data.get("currency")
+        if currency_code:
+            currency = self.env["res.currency"].search([("name", "=", currency_code)], limit=1)
             if currency:
                 vals["currency_id"] = currency.id
 
@@ -303,9 +304,10 @@ class TesoteAccount(models.Model):
         if balance_timestamp:
             vals["balance_data_current_as_of"] = self._parse_tesote_datetime(balance_timestamp)
 
-        # Update currency if available
-        if "currency" in data:
-            currency = self.env["res.currency"].search([("name", "=", data["currency"])], limit=1)
+        # Update currency if available - check nested data first
+        currency_code = nested_data.get("currency") or data.get("currency")
+        if currency_code:
+            currency = self.env["res.currency"].search([("name", "=", currency_code)], limit=1)
             if currency:
                 vals["currency_id"] = currency.id
 
