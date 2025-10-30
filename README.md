@@ -2,13 +2,23 @@
 
 Odoo 18.0 connector for **tesote.com API v2.0.0** - Real-time financial data synchronization.
 
+## Recent Updates
+
+**Latest Fixes (January 2025)**:
+- Fixed account balance field mapping - now correctly reads `balance_cents`/`available_balance_cents` from API and converts to dollars
+- Updated to use RESTful nested sync endpoint: `POST /api/v2/accounts/{id}/transactions/sync` (recommended structure)
+- Added `balance_data_current_as_of` timestamp field for balance data tracking
+- All 112 tests passing with full API v2.0.0 specification compliance
+
 ## Features
 
-- **Client to tesote.com Sync**: Real-time transaction synchronization using v2 `/transactions/sync` endpoint
+- **RESTful Transaction Sync**: Real-time transaction synchronization using v2 nested endpoint `/accounts/{id}/transactions/sync`
+- **Accurate Balance Tracking**: Proper conversion from cents to dollars with timestamp tracking
 - **Cursor-Based Sync**: Efficient incremental updates with cursor management
-- **Transaction Lifecycle**: Handles pending → completed state transitions
+- **Transaction Lifecycle**: Handles pending → completed state transitions (36 business hours)
 - **Real-time Webhooks**: Secure HMAC-SHA256 verified webhook processing with event subscriptions
 - **Multi-Company**: Support for multiple companies and backends
+- **Singleton Backend**: Single configuration pattern for simplified management
 
 ## Requirements
 
@@ -197,17 +207,55 @@ uv run isort .
 ```
 
 
+### Testing
+```bash
+# Run all 112 tests
+uv run pytest
+
+# Run with coverage report
+uv run pytest --cov=. --cov-report=term-missing
+
+# Run specific test categories
+uv run pytest tests/test_adapter*.py -v      # API communication tests
+uv run pytest tests/test_webhook*.py -v      # Webhook tests
+uv run pytest tests/test_phase4_security.py -v  # Security tests
+```
+
+All tests can run without Odoo installation thanks to mock infrastructure in `tests/conftest.py`.
+
 ### Additional Tools
 - **pgAdmin**: http://localhost:5050 (admin@tesote.com / admin)
 - **API Docs**: https://equipo.tesote.com/api/docs?version=v2
 
 ## API Endpoints Used
 
-- `GET /api/v2/accounts` - Fetch accounts
-- `GET /api/v2/accounts/{id}` - Fetch single account
-- `POST /api/v2/transactions/sync` - Sync transactions (cursor-based)
+- `GET /api/v2/accounts` - Fetch accounts list
+- `GET /api/v2/accounts/{id}` - Fetch single account details
+- `POST /api/v2/accounts/{id}/transactions/sync` - Sync transactions for specific account (cursor-based, RESTful nested endpoint)
 - `GET /api/v2/status` - Check API status
 - `GET /api/v2/whoami` - Get client information
+
+**Note**: Uses the recommended RESTful nested sync endpoint structure with account ID in the URL path.
+
+## Data Mapping
+
+### Account Fields
+| tesote.com API Field       | Odoo Field                 | Notes                           |
+|----------------------------|----------------------------|---------------------------------|
+| `balance_cents`            | `balance`                  | Converted from cents to dollars |
+| `available_balance_cents`  | `balance` (fallback)       | Used if balance_cents not set   |
+| `balance_data_current_as_of` | `balance_data_current_as_of` | ISO timestamp of balance data |
+| `id`                       | `tesote_id`                | Unique account identifier       |
+| `name`                     | `name`                     | Account display name            |
+
+### Transaction Fields
+| tesote.com API Field | Odoo Field          | Notes                          |
+|----------------------|---------------------|--------------------------------|
+| `amount`             | `amount`            | Already in dollars             |
+| `transaction_id`     | `tesote_id`         | Unique transaction identifier  |
+| `pending`            | `status`            | Maps to pending/completed      |
+| `merchant_name`      | `counterparty_name` | Transaction counterparty       |
+| `date`               | `date`              | ISO timestamp converted to UTC |
 
 ## Webhook Events Supported
 
