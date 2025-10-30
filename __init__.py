@@ -10,10 +10,13 @@ except ImportError:
     pass
 
 
-def post_init_hook(cr, registry):
+def post_init_hook(env):
     """
-    Post-initialization hook to run database migrations
-    This runs after the module is installed/upgraded
+    Post-initialization hook to run database migrations.
+    This runs after the module is installed/upgraded.
+
+    Args:
+        env: Odoo environment (Odoo 18.0+ signature)
     """
     import logging
 
@@ -26,7 +29,9 @@ def post_init_hook(cr, registry):
         from .migrations.migrate import migrate as run_migrations
 
         # Run database migrations
-        run_migrations(cr, registry.version)
+        cr = env.cr
+        version = env.registry.version if hasattr(env, "registry") else "18.0.1.0.0"
+        run_migrations(cr, version)
         _logger.info("Database migrations completed successfully")
     except Exception as e:
         _logger.error(f"Migration failed during post_init_hook: {e}")
@@ -34,16 +39,21 @@ def post_init_hook(cr, registry):
         # Users can run migrations manually if needed
 
 
-def pre_uninstall_hook(cr, registry):
+def pre_uninstall_hook(env):
     """
     Hook executed before module uninstallation.
 
     Logs comprehensive information about data that will be deleted.
     This provides visibility beyond Odoo's standard uninstall preview.
+
+    Args:
+        env: Odoo environment (Odoo 18.0+ signature)
     """
     import logging
 
     _logger = logging.getLogger(__name__)
+
+    cr = env.cr
 
     _logger.warning("=" * 80)
     _logger.warning("TESOTE CONNECTOR - PRE-UNINSTALL DATA SUMMARY")
