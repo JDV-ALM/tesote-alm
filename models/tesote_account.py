@@ -209,22 +209,36 @@ class TesoteAccount(models.Model):
             "tesote_updated_at": self._parse_tesote_datetime(data.get("tesote_updated_at")),
         }
 
-        # Set balance if available - API returns balance_cents, convert to dollars
-        balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
+        # Set balance if available - API returns balance_cents in nested 'data' field
+        # Try nested data field first (API v2 structure), then fallback to root level
+        nested_data = data.get("data", {})
+        balance_cents = nested_data.get("balance_cents") or nested_data.get(
+            "available_balance_cents"
+        )
+
+        # Fallback to root level if not in nested data
+        if balance_cents is None:
+            balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
+
         if balance_cents is not None:
-            vals["balance"] = float(balance_cents) / 100.0
+            # Handle both string and numeric values
+            balance_cents_num = (
+                float(balance_cents) if isinstance(balance_cents, str) else balance_cents
+            )
+            vals["balance"] = balance_cents_num / 100.0
             _logger.info(f"Converted balance: {balance_cents} cents -> ${vals['balance']}")
         else:
             _logger.warning(
                 f"No balance data in API response for account {data.get('id')}. "
-                f"API may not be returning balance_cents or available_balance_cents fields."
+                f"Checked both nested data.balance_cents and root balance_cents fields."
             )
 
-        # Store balance timestamp if available
-        if "balance_data_current_as_of" in data:
-            vals["balance_data_current_as_of"] = self._parse_tesote_datetime(
-                data.get("balance_data_current_as_of")
-            )
+        # Store balance timestamp if available - check nested data first
+        balance_timestamp = nested_data.get("balance_data_current_as_of") or data.get(
+            "balance_data_current_as_of"
+        )
+        if balance_timestamp:
+            vals["balance_data_current_as_of"] = self._parse_tesote_datetime(balance_timestamp)
 
         # Set currency if available
         if "currency" in data:
@@ -258,22 +272,36 @@ class TesoteAccount(models.Model):
             "tesote_updated_at": self._parse_tesote_datetime(data.get("tesote_updated_at")),
         }
 
-        # Update balance if available - API returns balance_cents, convert to dollars
-        balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
+        # Update balance if available - API returns balance_cents in nested 'data' field
+        # Try nested data field first (API v2 structure), then fallback to root level
+        nested_data = data.get("data", {})
+        balance_cents = nested_data.get("balance_cents") or nested_data.get(
+            "available_balance_cents"
+        )
+
+        # Fallback to root level if not in nested data
+        if balance_cents is None:
+            balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
+
         if balance_cents is not None:
-            vals["balance"] = float(balance_cents) / 100.0
+            # Handle both string and numeric values
+            balance_cents_num = (
+                float(balance_cents) if isinstance(balance_cents, str) else balance_cents
+            )
+            vals["balance"] = balance_cents_num / 100.0
             _logger.info(f"Converted balance: {balance_cents} cents -> ${vals['balance']}")
         else:
             _logger.warning(
                 f"No balance data in API response for account {data.get('id')}. "
-                f"API may not be returning balance_cents or available_balance_cents fields."
+                f"Checked both nested data.balance_cents and root balance_cents fields."
             )
 
-        # Update balance timestamp if available
-        if "balance_data_current_as_of" in data:
-            vals["balance_data_current_as_of"] = self._parse_tesote_datetime(
-                data.get("balance_data_current_as_of")
-            )
+        # Update balance timestamp if available - check nested data first
+        balance_timestamp = nested_data.get("balance_data_current_as_of") or data.get(
+            "balance_data_current_as_of"
+        )
+        if balance_timestamp:
+            vals["balance_data_current_as_of"] = self._parse_tesote_datetime(balance_timestamp)
 
         # Update currency if available
         if "currency" in data:
