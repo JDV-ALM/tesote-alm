@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
 
 # Import mocking setup (sets up all Odoo mocks)
 import tests.conftest  # noqa: F401
@@ -22,6 +22,7 @@ class TestWebhookProcessor(unittest.TestCase):
         self.transaction_model = Mock()
 
         from components.webhook_processor import WebhookProcessor
+
         self.processor = WebhookProcessor(self.env)
 
         self.backend = Mock()
@@ -41,15 +42,15 @@ class TestWebhookProcessor(unittest.TestCase):
         mock_model = Mock()
         mock_model.sudo.return_value = mock_model  # Make sudo() return itself
 
-        if model_name == 'tesote.webhook.event':
+        if model_name == "tesote.webhook.event":
             mock_model.browse = self.webhook_event_model.browse
             mock_model.search = self.webhook_event_model.search
             return mock_model
-        elif model_name == 'tesote.account':
+        elif model_name == "tesote.account":
             mock_model.search = self.account_model.search
             mock_model.create = self.account_model.create
             return mock_model
-        elif model_name == 'tesote.transaction':
+        elif model_name == "tesote.transaction":
             mock_model.search = self.transaction_model.search
             mock_model.create = self.transaction_model.create
             return mock_model
@@ -58,11 +59,11 @@ class TestWebhookProcessor(unittest.TestCase):
     def test_process_event_success(self):
         """Test successful webhook event processing."""
         self.webhook_event.get_payload_data.return_value = {
-            'data': {
-                'id': 'acc_123',
-                'new_transactions': 5,
-                'modified_transactions': 2,
-                'removed_transactions': 1
+            "data": {
+                "id": "acc_123",
+                "new_transactions": 5,
+                "modified_transactions": 2,
+                "removed_transactions": 1,
             }
         }
 
@@ -105,11 +106,11 @@ class TestWebhookProcessor(unittest.TestCase):
     def test_handle_sync_updates_with_delay(self):
         """Test sync.updates_available webhook with queue_job."""
         payload_data = {
-            'data': {
-                'id': 'acc_456',
-                'new_transactions': 10,
-                'modified_transactions': 5,
-                'removed_transactions': 2
+            "data": {
+                "id": "acc_456",
+                "new_transactions": 10,
+                "modified_transactions": 5,
+                "removed_transactions": 2,
             }
         }
 
@@ -134,16 +135,11 @@ class TestWebhookProcessor(unittest.TestCase):
 
     def test_handle_sync_updates_account_not_found(self):
         """Test sync.updates_available when account doesn't exist."""
-        payload_data = {
-            'data': {
-                'id': 'acc_notfound',
-                'new_transactions': 1
-            }
-        }
+        payload_data = {"data": {"id": "acc_notfound", "new_transactions": 1}}
 
         self.account_model.search.return_value = None
 
-        with patch.object(self.processor, '_fetch_and_create_account') as mock_fetch:
+        with patch.object(self.processor, "_fetch_and_create_account") as mock_fetch:
             mock_fetch.return_value = None
 
             with self.assertRaises(ValueError) as ctx:
@@ -154,23 +150,25 @@ class TestWebhookProcessor(unittest.TestCase):
     def test_handle_account_created(self):
         """Test accounts.created webhook processing."""
         payload_data = {
-            'data': {
-                'id': 'acc_new',
-                'name': 'New Account',
-                'type': 'savings',
-                'balance': 1000.00,
-                'currency': 'USD',
-                'institution_name': 'Test Bank',
-                'active': True,
-                'sync_required': True
+            "data": {
+                "id": "acc_new",
+                "name": "New Account",
+                "type": "savings",
+                "balance": 1000.00,
+                "currency": "USD",
+                "institution_name": "Test Bank",
+                "active": True,
+                "sync_required": True,
             }
         }
 
-        new_account = Mock(spec=['id', 'name'])  # Use spec to limit attributes
+        new_account = Mock(spec=["id", "name"])  # Use spec to limit attributes
         new_account.id = 3
         new_account.name = "New Account"
 
-        backend = Mock(spec=['id', 'sync_transactions_v2'])  # Use spec to limit attributes (no with_delay)
+        backend = Mock(
+            spec=["id", "sync_transactions_v2"]
+        )  # Use spec to limit attributes (no with_delay)
         backend.id = 1
         backend.sync_transactions_v2 = Mock()
         self.webhook_event.backend_id = backend
@@ -187,11 +185,7 @@ class TestWebhookProcessor(unittest.TestCase):
     def test_handle_account_created_already_exists(self):
         """Test accounts.created when account already exists."""
         payload_data = {
-            'data': {
-                'id': 'acc_existing',
-                'name': 'Existing Account',
-                'balance': 2000.00
-            }
+            "data": {"id": "acc_existing", "name": "Existing Account", "balance": 2000.00}
         }
 
         existing_account = Mock()
@@ -200,20 +194,19 @@ class TestWebhookProcessor(unittest.TestCase):
 
         self.account_model.search.return_value = existing_account
 
-        with patch.object(self.processor, '_update_account_from_data') as mock_update:
-
+        with patch.object(self.processor, "_update_account_from_data") as mock_update:
             self.processor._handle_account_created(self.webhook_event, payload_data)
 
-            mock_update.assert_called_once_with(existing_account, payload_data['data'])
+            mock_update.assert_called_once_with(existing_account, payload_data["data"])
 
     def test_handle_account_updated(self):
         """Test accounts.updated webhook processing."""
         payload_data = {
-            'data': {
-                'id': 'acc_update',
-                'name': 'Updated Account',
-                'balance': 5000.00,
-                'balance_changed': True
+            "data": {
+                "id": "acc_update",
+                "name": "Updated Account",
+                "balance": 5000.00,
+                "balance_changed": True,
             }
         }
 
@@ -229,8 +222,7 @@ class TestWebhookProcessor(unittest.TestCase):
 
         self.account_model.search.return_value = account
 
-        with patch.object(self.processor, '_update_account_from_data') as mock_update:
-
+        with patch.object(self.processor, "_update_account_from_data") as mock_update:
             self.processor._handle_account_updated(self.webhook_event, payload_data)
 
             mock_update.assert_called_once()
@@ -239,15 +231,15 @@ class TestWebhookProcessor(unittest.TestCase):
     def test_handle_transaction_created(self):
         """Test transactions.created webhook processing."""
         payload_data = {
-            'data': {
-                'id': 'tr_new',
-                'account_id': 'acc_123',
-                'description': 'New Transaction',
-                'amount': -50.00,
-                'date': '2023-08-27T10:30:00Z',
-                'status': 'pending',
-                'category': 'Food',
-                'merchant_name': 'Restaurant ABC'
+            "data": {
+                "id": "tr_new",
+                "account_id": "acc_123",
+                "description": "New Transaction",
+                "amount": -50.00,
+                "date": "2023-08-27T10:30:00Z",
+                "status": "pending",
+                "category": "Food",
+                "merchant_name": "Restaurant ABC",
             }
         }
 
@@ -270,12 +262,12 @@ class TestWebhookProcessor(unittest.TestCase):
     def test_handle_transaction_updated(self):
         """Test transactions.updated webhook processing."""
         payload_data = {
-            'data': {
-                'id': 'tr_update',
-                'status': 'completed',
-                'amount': -75.00,
-                'description': 'Updated Description',
-                'category': 'Entertainment'
+            "data": {
+                "id": "tr_update",
+                "status": "completed",
+                "amount": -75.00,
+                "description": "Updated Description",
+                "category": "Entertainment",
             }
         }
 
@@ -290,8 +282,8 @@ class TestWebhookProcessor(unittest.TestCase):
 
         transaction.write.assert_called_once()
         write_vals = transaction.write.call_args[0][0]
-        self.assertEqual(write_vals['status'], 'completed')
-        self.assertEqual(write_vals['amount'], -75.00)
+        self.assertEqual(write_vals["status"], "completed")
+        self.assertEqual(write_vals["amount"], -75.00)
 
     def test_retry_logic(self):
         """Test webhook retry scheduling."""
@@ -301,7 +293,8 @@ class TestWebhookProcessor(unittest.TestCase):
         self.webhook_event.with_delay.return_value.process_webhook = Mock()
 
         from unittest.mock import patch
-        with patch('components.webhook_processor.datetime') as mock_datetime:
+
+        with patch("components.webhook_processor.datetime") as mock_datetime:
             mock_datetime.now.return_value = datetime(2023, 8, 27, 10, 0, 0)
             mock_datetime.fromisoformat = datetime.fromisoformat
 
@@ -310,7 +303,7 @@ class TestWebhookProcessor(unittest.TestCase):
             self.webhook_event.with_delay.assert_called_once()
 
             kwargs = self.webhook_event.with_delay.call_args[1]
-            eta = kwargs.get('eta')
+            eta = kwargs.get("eta")
             # Second retry should have 5 minute delay (300 seconds)
             expected_eta = datetime(2023, 8, 27, 10, 0, 0) + timedelta(seconds=300)
             self.assertEqual(eta, expected_eta)
@@ -337,38 +330,38 @@ class TestWebhookProcessor(unittest.TestCase):
 
         self.webhook_event_model.search.return_value = [event1, event2, event3]
 
-        with patch.object(self.processor, 'process_event') as mock_process:
+        with patch.object(self.processor, "process_event") as mock_process:
             mock_process.side_effect = [True, False, True]
 
             result = self.processor.process_pending_events(limit=10)
 
-            self.assertEqual(result['processed'], 2)
-            self.assertEqual(result['failed'], 1)
+            self.assertEqual(result["processed"], 2)
+            self.assertEqual(result["failed"], 1)
             self.assertEqual(mock_process.call_count, 3)
 
     def test_prepare_account_values(self):
         """Test account value preparation from webhook data."""
         data = {
-            'id': 'acc_test',
-            'name': 'Test Account',
-            'type': 'checking',
-            'balance': 1500.00,
-            'currency': 'EUR',
-            'institution_name': 'Test Bank EU',
-            'active': True,
-            'sync_required': True
+            "id": "acc_test",
+            "name": "Test Account",
+            "type": "checking",
+            "balance": 1500.00,
+            "currency": "EUR",
+            "institution_name": "Test Bank EU",
+            "active": True,
+            "sync_required": True,
         }
 
         values = self.processor._prepare_account_values(data, self.backend)
 
-        self.assertEqual(values['tesote_id'], 'acc_test')
-        self.assertEqual(values['name'], 'Test Account')
-        self.assertEqual(values['account_type'], 'checking')
-        self.assertEqual(values['balance'], 1500.00)
-        self.assertEqual(values['currency'], 'EUR')
-        self.assertEqual(values['institution_name'], 'Test Bank EU')
-        self.assertTrue(values['active'])
-        self.assertIsNotNone(values['last_sync'])
+        self.assertEqual(values["tesote_id"], "acc_test")
+        self.assertEqual(values["name"], "Test Account")
+        self.assertEqual(values["account_type"], "checking")
+        self.assertEqual(values["balance"], 1500.00)
+        self.assertEqual(values["currency"], "EUR")
+        self.assertEqual(values["institution_name"], "Test Bank EU")
+        self.assertTrue(values["active"])
+        self.assertIsNotNone(values["last_sync"])
 
     def test_prepare_transaction_values(self):
         """Test transaction value preparation from webhook data."""
@@ -376,25 +369,25 @@ class TestWebhookProcessor(unittest.TestCase):
         account.id = 10
 
         data = {
-            'id': 'tr_test',
-            'description': 'Test Transaction',
-            'amount': -25.50,
-            'date': '2023-08-27T15:30:00Z',
-            'status': 'completed',
-            'category': 'Shopping',
-            'merchant_name': 'Store XYZ',
-            'type': 'debit'
+            "id": "tr_test",
+            "description": "Test Transaction",
+            "amount": -25.50,
+            "date": "2023-08-27T15:30:00Z",
+            "status": "completed",
+            "category": "Shopping",
+            "merchant_name": "Store XYZ",
+            "type": "debit",
         }
 
         values = self.processor._prepare_transaction_values(data, account)
 
-        self.assertEqual(values['tesote_id'], 'tr_test')
-        self.assertEqual(values['account_id'], 10)
-        self.assertEqual(values['name'], 'Test Transaction')
-        self.assertEqual(values['amount'], -25.50)
-        self.assertEqual(values['status'], 'completed')
-        self.assertEqual(values['category'], 'Shopping')
-        self.assertEqual(values['merchant_name'], 'Store XYZ')
+        self.assertEqual(values["tesote_id"], "tr_test")
+        self.assertEqual(values["account_id"], 10)
+        self.assertEqual(values["name"], "Test Transaction")
+        self.assertEqual(values["amount"], -25.50)
+        self.assertEqual(values["status"], "completed")
+        self.assertEqual(values["category"], "Shopping")
+        self.assertEqual(values["merchant_name"], "Store XYZ")
 
     def test_update_account_from_data(self):
         """Test updating account from webhook data."""
@@ -407,11 +400,11 @@ class TestWebhookProcessor(unittest.TestCase):
         account.write = Mock()
 
         data = {
-            'name': 'New Name',
-            'balance': 200.00,
-            'type': 'savings',
-            'institution_name': 'New Bank',
-            'active': False
+            "name": "New Name",
+            "balance": 200.00,
+            "type": "savings",
+            "institution_name": "New Bank",
+            "active": False,
         }
 
         self.processor._update_account_from_data(account, data)
@@ -419,18 +412,18 @@ class TestWebhookProcessor(unittest.TestCase):
         account.write.assert_called_once()
         update_vals = account.write.call_args[0][0]
 
-        self.assertEqual(update_vals['name'], 'New Name')
-        self.assertEqual(update_vals['balance'], 200.00)
-        self.assertEqual(update_vals['account_type'], 'savings')
-        self.assertEqual(update_vals['institution_name'], 'New Bank')
-        self.assertFalse(update_vals['active'])
+        self.assertEqual(update_vals["name"], "New Name")
+        self.assertEqual(update_vals["balance"], 200.00)
+        self.assertEqual(update_vals["account_type"], "savings")
+        self.assertEqual(update_vals["institution_name"], "New Bank")
+        self.assertFalse(update_vals["active"])
 
     def test_fetch_and_create_account(self):
         """Test fetching account from API and creating it."""
-        account_id = 'acc_fetch'
+        account_id = "acc_fetch"
 
-        self.backend.api_url = 'https://api.tesote.com'
-        self.backend.api_key = 'test_api_key'
+        self.backend.api_url = "https://api.tesote.com"
+        self.backend.api_key = "test_api_key"
 
         new_account = Mock()
         new_account.id = 20
@@ -438,18 +431,18 @@ class TestWebhookProcessor(unittest.TestCase):
         self.account_model.create.return_value = new_account
 
         # Mock the TesoteAdapter import inside the method
-        with patch('components.adapter.TesoteAdapter') as MockAdapter:
+        with patch("components.adapter.TesoteAdapter") as MockAdapter:
             mock_adapter = Mock()
             MockAdapter.return_value = mock_adapter
             mock_adapter._call_api.return_value = {
-                'data': {
-                    'id': 'acc_fetch',
-                    'name': 'Fetched Account',
-                    'type': 'checking',
-                    'balance': 3000.00,
-                    'currency': 'USD',
-                    'institution_name': 'API Bank',
-                    'active': True
+                "data": {
+                    "id": "acc_fetch",
+                    "name": "Fetched Account",
+                    "type": "checking",
+                    "balance": 3000.00,
+                    "currency": "USD",
+                    "institution_name": "API Bank",
+                    "active": True,
                 }
             }
 
@@ -457,6 +450,6 @@ class TestWebhookProcessor(unittest.TestCase):
 
             self.account_model.create.assert_called_once()
             create_vals = self.account_model.create.call_args[0][0]
-            self.assertEqual(create_vals['tesote_id'], 'acc_fetch')
-            self.assertEqual(create_vals['name'], 'Fetched Account')
+            self.assertEqual(create_vals["tesote_id"], "acc_fetch")
+            self.assertEqual(create_vals["name"], "Fetched Account")
             self.assertEqual(result, new_account)

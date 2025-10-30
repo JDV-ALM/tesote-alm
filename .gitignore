@@ -20,6 +20,8 @@ env/
 htmlcov/
 .pytest_cache/
 .tox/
+coverage.xml
+.ruff_cache/
 
 # IDE
 .vscode/

@@ -26,7 +26,7 @@ class WebhookProcessor:
         :param webhook_event_id: ID of the webhook event to process
         :return: Boolean indicating success
         """
-        WebhookEvent = self.env['tesote.webhook.event'].sudo()
+        WebhookEvent = self.env["tesote.webhook.event"].sudo()
         webhook_event = WebhookEvent.browse(webhook_event_id)
 
         if not webhook_event.exists():
@@ -38,15 +38,15 @@ class WebhookProcessor:
 
             payload_data = webhook_event.get_payload_data()
 
-            if webhook_event.event_type == 'sync.updates_available':
+            if webhook_event.event_type == "sync.updates_available":
                 self._handle_sync_updates(webhook_event, payload_data)
-            elif webhook_event.event_type == 'accounts.created':
+            elif webhook_event.event_type == "accounts.created":
                 self._handle_account_created(webhook_event, payload_data)
-            elif webhook_event.event_type == 'accounts.updated':
+            elif webhook_event.event_type == "accounts.updated":
                 self._handle_account_updated(webhook_event, payload_data)
-            elif webhook_event.event_type == 'transactions.created':
+            elif webhook_event.event_type == "transactions.created":
                 self._handle_transaction_created(webhook_event, payload_data)
-            elif webhook_event.event_type == 'transactions.updated':
+            elif webhook_event.event_type == "transactions.updated":
                 self._handle_transaction_updated(webhook_event, payload_data)
             else:
                 raise ValueError(f"Unknown event type: {webhook_event.event_type}")
@@ -76,38 +76,44 @@ class WebhookProcessor:
         - Calls POST /api/v2/transactions/sync with stored cursor
         - Processes added/modified/removed arrays from response
         """
-        data = payload_data.get('data', {})
-        account_id = data.get('id')
+        data = payload_data.get("data", {})
+        account_id = data.get("id")
 
         if not account_id:
             raise ValueError("Missing account ID in sync.updates_available payload")
 
-        TesoteAccount = self.env['tesote.account'].sudo()
-        account = TesoteAccount.search([
-            ('tesote_id', '=', account_id),  # Changed from 'external_id' to 'tesote_id'
-            ('backend_id', '=', webhook_event.backend_id.id)
-        ], limit=1)
+        TesoteAccount = self.env["tesote.account"].sudo()
+        account = TesoteAccount.search(
+            [
+                ("tesote_id", "=", account_id),  # Changed from 'external_id' to 'tesote_id'
+                ("backend_id", "=", webhook_event.backend_id.id),
+            ],
+            limit=1,
+        )
 
         if not account:
             _logger.warning(f"Account {account_id} not found, attempting to fetch from API")
             self._fetch_and_create_account(account_id, webhook_event.backend_id)
-            account = TesoteAccount.search([
-                ('tesote_id', '=', account_id),  # Changed from 'external_id' to 'tesote_id'
-                ('backend_id', '=', webhook_event.backend_id.id)
-            ], limit=1)
+            account = TesoteAccount.search(
+                [
+                    ("tesote_id", "=", account_id),  # Changed from 'external_id' to 'tesote_id'
+                    ("backend_id", "=", webhook_event.backend_id.id),
+                ],
+                limit=1,
+            )
 
             if not account:
                 raise ValueError(f"Could not find or create account {account_id}")
 
         # Extract sync statistics from webhook payload
-        new_count = data.get('new_transactions', 0)
-        modified_count = data.get('modified_transactions', 0)
-        removed_count = data.get('removed_transactions', 0)
+        new_count = data.get("new_transactions", 0)
+        modified_count = data.get("modified_transactions", 0)
+        removed_count = data.get("removed_transactions", 0)
 
         # Also extract the IDs if provided (useful for debugging)
-        new_ids = data.get('new_ids', [])
-        updated_ids = data.get('updated_ids', [])
-        removed_ids = data.get('removed_ids', [])
+        new_ids = data.get("new_ids", [])
+        updated_ids = data.get("updated_ids", [])
+        removed_ids = data.get("removed_ids", [])
 
         _logger.info(
             f"Processing sync.updates_available for account {account_id}: "
@@ -123,15 +129,15 @@ class WebhookProcessor:
         backend = webhook_event.backend_id
 
         # Use the backend's sync_transactions_v2 method which handles cursor-based sync
-        if hasattr(backend, 'with_delay'):
+        if hasattr(backend, "with_delay"):
             # Queue the sync job for async processing
             job = backend.with_delay(
                 priority=5,
                 max_retries=3,
-                description=f"Sync transactions for account {account.name} (webhook triggered)"
+                description=f"Sync transactions for account {account.name} (webhook triggered)",
             ).sync_transactions_v2(account_ids=[account.id])
 
-            if hasattr(job, 'uuid'):
+            if hasattr(job, "uuid"):
                 webhook_event.sync_job_id = str(job.uuid)
                 _logger.info(f"Queued sync job {job.uuid} for account {account_id}")
         else:
@@ -141,17 +147,17 @@ class WebhookProcessor:
 
     def _handle_account_created(self, webhook_event, payload_data):
         """Handle accounts.created webhook event."""
-        data = payload_data.get('data', {})
-        account_id = data.get('id')
+        data = payload_data.get("data", {})
+        account_id = data.get("id")
 
         if not account_id:
             raise ValueError("Missing account ID in accounts.created payload")
 
-        TesoteAccount = self.env['tesote.account'].sudo()
-        existing = TesoteAccount.search([
-            ('tesote_id', '=', account_id),
-            ('backend_id', '=', webhook_event.backend_id.id)
-        ], limit=1)
+        TesoteAccount = self.env["tesote.account"].sudo()
+        existing = TesoteAccount.search(
+            [("tesote_id", "=", account_id), ("backend_id", "=", webhook_event.backend_id.id)],
+            limit=1,
+        )
 
         if existing:
             _logger.info(f"Account {account_id} already exists, updating instead")
@@ -163,30 +169,29 @@ class WebhookProcessor:
 
         _logger.info(f"Created account {new_account.name} (ID: {account_id}) from webhook")
 
-        if data.get('sync_required', False):
+        if data.get("sync_required", False):
             _logger.info(f"Account {account_id} requires initial sync")
             backend = webhook_event.backend_id
-            if hasattr(backend, 'with_delay'):
+            if hasattr(backend, "with_delay"):
                 backend.with_delay(
-                    priority=10,
-                    description=f"Initial sync for new account {new_account.name}"
+                    priority=10, description=f"Initial sync for new account {new_account.name}"
                 ).sync_transactions_v2(account_ids=[new_account.id])
             else:
                 backend.sync_transactions_v2(account_ids=[new_account.id])
 
     def _handle_account_updated(self, webhook_event, payload_data):
         """Handle accounts.updated webhook event."""
-        data = payload_data.get('data', {})
-        account_id = data.get('id')
+        data = payload_data.get("data", {})
+        account_id = data.get("id")
 
         if not account_id:
             raise ValueError("Missing account ID in accounts.updated payload")
 
-        TesoteAccount = self.env['tesote.account'].sudo()
-        account = TesoteAccount.search([
-            ('tesote_id', '=', account_id),
-            ('backend_id', '=', webhook_event.backend_id.id)
-        ], limit=1)
+        TesoteAccount = self.env["tesote.account"].sudo()
+        account = TesoteAccount.search(
+            [("tesote_id", "=", account_id), ("backend_id", "=", webhook_event.backend_id.id)],
+            limit=1,
+        )
 
         if not account:
             _logger.warning(f"Account {account_id} not found for update, creating it")
@@ -197,41 +202,39 @@ class WebhookProcessor:
             self._update_account_from_data(account, data)
             _logger.info(f"Updated account {account.name} (ID: {account_id}) from webhook")
 
-        if data.get('balance_changed', False):
+        if data.get("balance_changed", False):
             _logger.info(f"Account {account_id} balance changed, triggering sync")
             backend = webhook_event.backend_id
-            if hasattr(backend, 'with_delay'):
+            if hasattr(backend, "with_delay"):
                 backend.with_delay(
-                    priority=8,
-                    description=f"Sync after balance change for {account.name}"
+                    priority=8, description=f"Sync after balance change for {account.name}"
                 ).sync_transactions_v2(account_ids=[account.id])
             else:
                 backend.sync_transactions_v2(account_ids=[account.id])
 
     def _handle_transaction_created(self, webhook_event, payload_data):
         """Handle transactions.created webhook event."""
-        data = payload_data.get('data', {})
-        transaction_id = data.get('id')
-        account_id = data.get('account_id')
+        data = payload_data.get("data", {})
+        transaction_id = data.get("id")
+        account_id = data.get("account_id")
 
         if not transaction_id or not account_id:
             raise ValueError("Missing transaction or account ID in payload")
 
-        TesoteAccount = self.env['tesote.account'].sudo()
-        account = TesoteAccount.search([
-            ('tesote_id', '=', account_id),
-            ('backend_id', '=', webhook_event.backend_id.id)
-        ], limit=1)
+        TesoteAccount = self.env["tesote.account"].sudo()
+        account = TesoteAccount.search(
+            [("tesote_id", "=", account_id), ("backend_id", "=", webhook_event.backend_id.id)],
+            limit=1,
+        )
 
         if not account:
             _logger.warning(f"Account {account_id} not found for new transaction")
             return
 
-        TesoteTransaction = self.env['tesote.transaction'].sudo()
-        existing = TesoteTransaction.search([
-            ('tesote_id', '=', transaction_id),
-            ('account_id', '=', account.id)
-        ], limit=1)
+        TesoteTransaction = self.env["tesote.transaction"].sudo()
+        existing = TesoteTransaction.search(
+            [("tesote_id", "=", transaction_id), ("account_id", "=", account.id)], limit=1
+        )
 
         if existing:
             _logger.info(f"Transaction {transaction_id} already exists")
@@ -247,16 +250,14 @@ class WebhookProcessor:
 
     def _handle_transaction_updated(self, webhook_event, payload_data):
         """Handle transactions.updated webhook event."""
-        data = payload_data.get('data', {})
-        transaction_id = data.get('id')
+        data = payload_data.get("data", {})
+        transaction_id = data.get("id")
 
         if not transaction_id:
             raise ValueError("Missing transaction ID in payload")
 
-        TesoteTransaction = self.env['tesote.transaction'].sudo()
-        transaction = TesoteTransaction.search([
-            ('tesote_id', '=', transaction_id)
-        ], limit=1)
+        TesoteTransaction = self.env["tesote.transaction"].sudo()
+        transaction = TesoteTransaction.search([("tesote_id", "=", transaction_id)], limit=1)
 
         if not transaction:
             _logger.warning(f"Transaction {transaction_id} not found for update")
@@ -264,16 +265,16 @@ class WebhookProcessor:
 
         update_vals = {}
 
-        if 'status' in data:
-            update_vals['status'] = data['status']
-        if 'amount' in data:
-            update_vals['amount'] = data['amount']
-        if 'description' in data:
-            update_vals['description'] = data['description']
-        if 'category' in data:
-            update_vals['category'] = data['category']
-        if 'merchant_name' in data:
-            update_vals['merchant_name'] = data['merchant_name']
+        if "status" in data:
+            update_vals["status"] = data["status"]
+        if "amount" in data:
+            update_vals["amount"] = data["amount"]
+        if "description" in data:
+            update_vals["description"] = data["description"]
+        if "category" in data:
+            update_vals["category"] = data["category"]
+        if "merchant_name" in data:
+            update_vals["merchant_name"] = data["merchant_name"]
 
         if update_vals:
             transaction.write(update_vals)
@@ -282,42 +283,42 @@ class WebhookProcessor:
     def _prepare_account_values(self, data, backend):
         """Prepare account values from webhook data."""
         return {
-            'tesote_id': data.get('id'),
-            'backend_id': backend.id,
-            'name': data.get('name', f"Account {data.get('id')}"),
-            'account_type': data.get('type', 'checking'),
-            'balance': data.get('balance', 0.0),
-            'currency': data.get('currency', 'USD'),
-            'institution_name': data.get('institution_name', ''),
-            'active': data.get('active', True),
-            'last_sync': fields.Datetime.now() if data.get('sync_required') else False,
+            "tesote_id": data.get("id"),
+            "backend_id": backend.id,
+            "name": data.get("name", f"Account {data.get('id')}"),
+            "account_type": data.get("type", "checking"),
+            "balance": data.get("balance", 0.0),
+            "currency": data.get("currency", "USD"),
+            "institution_name": data.get("institution_name", ""),
+            "active": data.get("active", True),
+            "last_sync": fields.Datetime.now() if data.get("sync_required") else False,
         }
 
     def _update_account_from_data(self, account, data):
         """Update account fields from webhook data."""
         update_vals = {}
 
-        if 'name' in data and data['name'] != account.name:
-            update_vals['name'] = data['name']
-        if 'balance' in data and data['balance'] != account.balance:
-            update_vals['balance'] = data['balance']
-        if 'type' in data and data['type'] != account.account_type:
-            update_vals['account_type'] = data['type']
-        if 'institution_name' in data and data['institution_name'] != account.institution_name:
-            update_vals['institution_name'] = data['institution_name']
-        if 'active' in data and data['active'] != account.active:
-            update_vals['active'] = data['active']
+        if "name" in data and data["name"] != account.name:
+            update_vals["name"] = data["name"]
+        if "balance" in data and data["balance"] != account.balance:
+            update_vals["balance"] = data["balance"]
+        if "type" in data and data["type"] != account.account_type:
+            update_vals["account_type"] = data["type"]
+        if "institution_name" in data and data["institution_name"] != account.institution_name:
+            update_vals["institution_name"] = data["institution_name"]
+        if "active" in data and data["active"] != account.active:
+            update_vals["active"] = data["active"]
 
         if update_vals:
             account.write(update_vals)
 
     def _prepare_transaction_values(self, data, account):
         """Prepare transaction values from webhook data."""
-        transaction_date = data.get('date')
+        transaction_date = data.get("date")
         if transaction_date:
             try:
                 transaction_date = datetime.fromisoformat(
-                    transaction_date.replace('Z', '+00:00')
+                    transaction_date.replace("Z", "+00:00")
                 ).date()
             except (ValueError, AttributeError):
                 transaction_date = fields.Date.today()
@@ -325,31 +326,32 @@ class WebhookProcessor:
             transaction_date = fields.Date.today()
 
         return {
-            'tesote_id': data.get('id'),
-            'account_id': account.id,
-            'name': data.get('description', f"Transaction {data.get('id')}"),
-            'date': transaction_date,
-            'amount': data.get('amount', 0.0),
-            'status': data.get('status', 'pending'),
-            'category': data.get('category', ''),
-            'merchant_name': data.get('merchant_name', ''),
-            'description': data.get('description', ''),
-            'transaction_type': data.get('type', 'debit'),
+            "tesote_id": data.get("id"),
+            "account_id": account.id,
+            "name": data.get("description", f"Transaction {data.get('id')}"),
+            "date": transaction_date,
+            "amount": data.get("amount", 0.0),
+            "status": data.get("status", "pending"),
+            "category": data.get("category", ""),
+            "merchant_name": data.get("merchant_name", ""),
+            "description": data.get("description", ""),
+            "transaction_type": data.get("type", "debit"),
         }
 
     def _fetch_and_create_account(self, account_id, backend):
         """Fetch account from API and create it."""
         try:
             from components.adapter import TesoteAdapter
+
             adapter = TesoteAdapter(self.env)
             adapter.backend = backend
 
-            response = adapter._call_api(f'/accounts/{account_id}', method='GET')
+            response = adapter._call_api(f"/accounts/{account_id}", method="GET")
 
-            if response and response.get('data'):
-                account_data = response['data']
+            if response and response.get("data"):
+                account_data = response["data"]
                 account_vals = self._prepare_account_values(account_data, backend)
-                TesoteAccount = self.env['tesote.account'].sudo()
+                TesoteAccount = self.env["tesote.account"].sudo()
                 return TesoteAccount.create(account_vals)
         except Exception as e:
             _logger.error(f"Failed to fetch account {account_id} from API: {e}")
@@ -374,11 +376,11 @@ class WebhookProcessor:
             f"at {eta.isoformat()}"
         )
 
-        if hasattr(webhook_event, 'with_delay'):
+        if hasattr(webhook_event, "with_delay"):
             webhook_event.with_delay(
                 eta=eta,
                 priority=20,
-                description=f"Retry #{retry_count + 1} for webhook {webhook_event.event_id}"
+                description=f"Retry #{retry_count + 1} for webhook {webhook_event.event_id}",
             ).process_webhook()
         else:
             _logger.warning("Queue job not available, cannot schedule retry")
@@ -390,10 +392,10 @@ class WebhookProcessor:
         This can be called from a cron job to process any events
         that might have been missed.
         """
-        WebhookEvent = self.env['tesote.webhook.event'].sudo()
-        pending_events = WebhookEvent.search([
-            ('status', '=', 'pending')
-        ], limit=limit, order='received_at asc')
+        WebhookEvent = self.env["tesote.webhook.event"].sudo()
+        pending_events = WebhookEvent.search(
+            [("status", "=", "pending")], limit=limit, order="received_at asc"
+        )
 
         processed = 0
         failed = 0
@@ -409,4 +411,4 @@ class WebhookProcessor:
                 failed += 1
 
         _logger.info(f"Processed {processed} pending events, {failed} failed")
-        return {'processed': processed, 'failed': failed}
+        return {"processed": processed, "failed": failed}

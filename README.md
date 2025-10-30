@@ -165,6 +165,26 @@ account.import_transactions()
 
 ## Development
 
+### Quick Setup
+```bash
+# Install uv (fast Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies
+uv sync --dev
+
+# Install pre-commit hooks
+source .venv/bin/activate && pre-commit install
+
+# Run tests
+uv run pytest
+
+# Run linters
+uv run ruff check --fix .
+uv run black .
+uv run isort .
+```
+
 ### Docker Commands
 ```bash
 ./bin/docker-dev up          # Start environment
@@ -174,16 +194,6 @@ account.import_transactions()
 ./bin/docker-dev shell       # Open Odoo Python shell
 ./bin/docker-dev backup      # Create database backup
 ./bin/docker-dev status      # Check environment status
-```
-
-### Testing
-```bash
-# With Docker
-./bin/docker-dev test
-
-# Without Docker
-./bin/test                          # Run all tests
-./bin/test --module tesote_connector  # Test specific module
 ```
 
 

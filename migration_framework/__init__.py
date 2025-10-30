@@ -4,4 +4,4 @@
 from .base_migration import BaseMigration
 from .migration_runner import MigrationRunner
 
-__all__ = ['BaseMigration', 'MigrationRunner']
+__all__ = ["BaseMigration", "MigrationRunner"]

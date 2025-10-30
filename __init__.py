@@ -4,9 +4,7 @@
 # Only import when running in Odoo context
 # Tests will mock these modules
 try:
-    from . import models
-    from . import components
-    from . import controllers
+    from . import components, controllers, models
 except ImportError:
     # Running in test environment
     pass
@@ -18,14 +16,15 @@ def post_init_hook(cr, registry):
     This runs after the module is installed/upgraded
     """
     import logging
+
     _logger = logging.getLogger(__name__)
-    
+
     _logger.info("Running tesote_connector post-initialization")
-    
+
     try:
         # Import here to avoid circular imports
         from .migrations.migrate import migrate as run_migrations
-        
+
         # Run database migrations
         run_migrations(cr, registry.version)
         _logger.info("Database migrations completed successfully")

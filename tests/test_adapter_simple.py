@@ -7,14 +7,16 @@ Simple unit tests for Tesote API Adapter that run without Odoo.
 
 # Import conftest first to set up Odoo mocks
 
-import pytest
-from unittest.mock import Mock, patch
-import responses
-import sys
 import os
+import sys
+from unittest.mock import Mock, patch
+
+import pytest
+import responses
 
 # Add parent directory to path for imports when running tests standalone
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 class TestTesoteAdapterSimple:
     """Test Tesote API Adapter without Odoo dependencies."""
@@ -36,6 +38,7 @@ class TestTesoteAdapterSimple:
         """Create adapter instance with mock backend."""
         # Import after mocks are set up
         from components.adapter import TesoteAdapter
+
         return TesoteAdapter(mock_backend)
 
     def test_adapter_initialization(self, adapter, mock_backend):
@@ -47,21 +50,21 @@ class TestTesoteAdapterSimple:
     def test_session_headers(self, adapter):
         """Test that session has correct headers."""
         session = adapter.session
-        assert session.headers['Authorization'] == "Bearer test_bearer_token_123"
-        assert session.headers['Accept'] == "application/json"
-        assert session.headers['Content-Type'] == "application/json"
+        assert session.headers["Authorization"] == "Bearer test_bearer_token_123"
+        assert session.headers["Accept"] == "application/json"
+        assert session.headers["Content-Type"] == "application/json"
         # Verify User-Agent format includes module identification
-        user_agent = session.headers['User-Agent']
-        assert 'TesoteOdooConnector' in user_agent
-        assert '18.0' in user_agent
-        assert 'API/v2' in user_agent
-        assert 'Odoo' in user_agent
-        assert 'Python' in user_agent
+        user_agent = session.headers["User-Agent"]
+        assert "TesoteOdooConnector" in user_agent
+        assert "18.0" in user_agent
+        assert "API/v2" in user_agent
+        assert "Odoo" in user_agent
+        assert "Python" in user_agent
 
     def test_user_agent_format(self, adapter):
         """Test User-Agent has correct format for module identification."""
         session = adapter.session
-        user_agent = session.headers['User-Agent']
+        user_agent = session.headers["User-Agent"]
 
         # Should be in format: TesoteOdooConnector/18.0.1.0.0 (API/v2; Odoo/18.0; Python/requests)
         expected = "TesoteOdooConnector/18.0.1.0.0 (API/v2; Odoo/18.0; Python/requests)"
@@ -70,12 +73,12 @@ class TestTesoteAdapterSimple:
     def test_get_url_construction(self, adapter):
         """Test URL construction for API endpoints."""
         # Test known endpoints
-        assert adapter._get_url('accounts') == "https://equipo.tesote.com/api/v2/accounts"
-        assert adapter._get_url('status') == "https://equipo.tesote.com/api/v2/status"
-        assert adapter._get_url('whoami') == "https://equipo.tesote.com/api/v2/whoami"
+        assert adapter._get_url("accounts") == "https://equipo.tesote.com/api/v2/accounts"
+        assert adapter._get_url("status") == "https://equipo.tesote.com/api/v2/status"
+        assert adapter._get_url("whoami") == "https://equipo.tesote.com/api/v2/whoami"
 
         # Test with parameters
-        url = adapter._get_url('account_detail', account_id='123')
+        url = adapter._get_url("account_detail", account_id="123")
         assert url == "https://equipo.tesote.com/api/v2/accounts/123"
 
     @responses.activate
@@ -86,7 +89,7 @@ class TestTesoteAdapterSimple:
             responses.GET,
             "https://equipo.tesote.com/api/v2/status",
             json={"status": "ok"},
-            status=200
+            status=200,
         )
 
         # Execute
@@ -103,11 +106,8 @@ class TestTesoteAdapterSimple:
         responses.add(
             responses.GET,
             "https://equipo.tesote.com/api/v2/whoami",
-            json={
-                "name": "Test Client",
-                "environment": "Production"
-            },
-            status=200
+            json={"name": "Test Client", "environment": "Production"},
+            status=200,
         )
 
         # Execute
@@ -127,13 +127,13 @@ class TestTesoteAdapterSimple:
             json={
                 "accounts": [
                     {"id": "acc-001", "name": "Checking"},
-                    {"id": "acc-002", "name": "Savings"}
+                    {"id": "acc-002", "name": "Savings"},
                 ],
                 "page": 1,
                 "per_page": 100,
-                "total": 2
+                "total": 2,
             },
-            status=200
+            status=200,
         )
 
         # Execute
@@ -152,23 +152,17 @@ class TestTesoteAdapterSimple:
             responses.POST,
             "https://equipo.tesote.com/api/v2/transactions/sync",
             json={
-                "added": [
-                    {"transaction_id": "txn-001", "amount": 100}
-                ],
+                "added": [{"transaction_id": "txn-001", "amount": 100}],
                 "modified": [],
                 "removed": [],
                 "next_cursor": "cursor-123",
-                "has_more": False
+                "has_more": False,
             },
-            status=200
+            status=200,
         )
 
         # Execute - without cursor for initial sync
-        result = adapter.sync_transactions(
-            tesote_account_id="acc-001",
-            cursor=None,
-            count=100
-        )
+        result = adapter.sync_transactions(tesote_account_id="acc-001", cursor=None, count=100)
 
         # Assert
         assert len(result["added"]) == 1
@@ -185,7 +179,7 @@ class TestTesoteAdapterSimple:
             "https://equipo.tesote.com/api/v2/accounts",
             status=429,
             headers={"Retry-After": "60"},
-            json={"error": "Rate limit exceeded"}
+            json={"error": "Rate limit exceeded"},
         )
 
         # Execute and expect exception
@@ -203,7 +197,7 @@ class TestTesoteAdapterSimple:
             responses.GET,
             "https://equipo.tesote.com/api/v2/accounts",
             status=401,
-            json={"error": "Unauthorized", "message": "Invalid token"}
+            json={"error": "Unauthorized", "message": "Invalid token"},
         )
 
         # Execute and expect exception
@@ -233,20 +227,20 @@ class TestTesoteAdapterSimple:
 
         # Test data from sync API
         sync_data = {
-            'transaction_id': 'txn-001',
-            'name': 'Test Transaction',
-            'amount': 100.0,
-            'date': '2024-01-01',
-            'pending': False
+            "transaction_id": "txn-001",
+            "name": "Test Transaction",
+            "amount": 100.0,
+            "date": "2024-01-01",
+            "pending": False,
         }
 
         # Expected values including backend_id
         expected_vals = {
-            'account_id': mock_account.id,
-            'backend_id': mock_backend.id,  # This should be explicitly set
-            'tesote_id': 'txn-001',
-            'name': 'Test Transaction',
-            'amount': 100.0,
+            "account_id": mock_account.id,
+            "backend_id": mock_backend.id,  # This should be explicitly set
+            "tesote_id": "txn-001",
+            "name": "Test Transaction",
+            "amount": 100.0,
         }
 
         # Simulate create_from_sync_data call
@@ -259,13 +253,13 @@ class TestTesoteAdapterSimple:
     def test_sync_transactions_cursor_handling(self, adapter):
         """Test cursor handling in sync_transactions."""
         # Test that cursor is omitted when None
-        with patch.object(adapter, '_request') as mock_request:
+        with patch.object(adapter, "_request") as mock_request:
             mock_request.return_value = {
                 "added": [],
                 "modified": [],
                 "removed": [],
                 "next_cursor": "new-cursor",
-                "has_more": False
+                "has_more": False,
             }
 
             # Call with no cursor
@@ -273,20 +267,20 @@ class TestTesoteAdapterSimple:
 
             # Check that cursor was not included in request data
             call_args = mock_request.call_args
-            request_data = call_args[1]['data']
-            assert 'cursor' not in request_data
-            assert request_data['tesote_account_id'] == "acc-001"
-            assert request_data['count'] == 100
+            request_data = call_args[1]["data"]
+            assert "cursor" not in request_data
+            assert request_data["tesote_account_id"] == "acc-001"
+            assert request_data["count"] == 100
 
     def test_sync_transactions_with_cursor(self, adapter):
         """Test sync_transactions with a valid cursor."""
-        with patch.object(adapter, '_request') as mock_request:
+        with patch.object(adapter, "_request") as mock_request:
             mock_request.return_value = {
                 "added": [],
                 "modified": [],
                 "removed": [],
                 "next_cursor": "newer-cursor",
-                "has_more": False
+                "has_more": False,
             }
 
             # Call with a cursor
@@ -294,6 +288,6 @@ class TestTesoteAdapterSimple:
 
             # Check that cursor was included
             call_args = mock_request.call_args
-            request_data = call_args[1]['data']
-            assert request_data['cursor'] == "existing-cursor"
-            assert request_data['tesote_account_id'] == "acc-001"
+            request_data = call_args[1]["data"]
+            assert request_data["cursor"] == "existing-cursor"
+            assert request_data["tesote_account_id"] == "acc-001"

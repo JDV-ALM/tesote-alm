@@ -8,7 +8,7 @@ tesote.com Odoo API Connector - Integration between Odoo 18.0 and tesote.com API
 
 **Features**:
 - Single API configuration (singleton pattern)
-- Account and transaction synchronization  
+- Account and transaction synchronization
 - Cursor-based incremental sync
 - Rate limiting support (Standard/Premium/Enterprise tiers)
 - Webhook support for real-time updates
@@ -23,7 +23,7 @@ tesote.com Odoo API Connector - Integration between Odoo 18.0 and tesote.com API
 
 ### Models
 - `tesote_backend.py` - Backend configuration and sync orchestration
-- `tesote_account.py` - Financial accounts with sync cursor tracking  
+- `tesote_account.py` - Financial accounts with sync cursor tracking
 - `tesote_transaction.py` - Transactions with pending/completed status handling
 - `tesote_binding.py` - Abstract base for all tesote.com models
 
@@ -40,29 +40,82 @@ tesote.com Odoo API Connector - Integration between Odoo 18.0 and tesote.com API
 - Real-time event processing with HMAC-SHA256 signature verification
 - Supports sync triggers, account updates, transaction notifications
 
+## Development Setup
+
+### Initial Setup with uv
+
+This project uses [uv](https://docs.astral.sh/uv/) for fast dependency management.
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install all dependencies (including dev tools)
+uv sync --dev
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Development Tools
+
+**Linting & Formatting**:
+- `ruff` - Fast Python linter (replaces flake8, isort partially)
+- `black` - Code formatter (100 char line length)
+- `isort` - Import sorter with Odoo-specific sections
+- `pre-commit` - Git hooks for automated checks
+
+**Configuration**: All tools configured in `pyproject.toml`
+
+```bash
+# Run linters
+uv run ruff check --fix .
+uv run black .
+uv run isort .
+
+# Or use pre-commit to run all checks
+uv run pre-commit run --all-files
+```
+
 ## Testing
 
 The module includes unit tests that can run without Odoo installation by mocking Odoo dependencies.
 
-### Running Tests Without Odoo
+### Running Tests
 
 ```bash
-# Run all tests
-python3 -m pytest tests/ -v
+# Run all tests (112 tests)
+uv run pytest
+
+# Run with verbose output
+uv run pytest -v
 
 # Run specific test file
-python3 -m pytest tests/test_adapter_simple.py -v
+uv run pytest tests/test_adapter_simple.py -v
 
 # Run with coverage
-python3 -m pytest tests/ --cov=components --cov-report=term-missing
+uv run pytest --cov=. --cov-report=term-missing
+
+# Run tests matching a pattern
+uv run pytest -k "webhook" -v
 ```
 
 ### Test Structure
 
 - `tests/conftest.py` - Mocks Odoo modules and dependencies
-- `tests/test_adapter_simple.py` - Unit tests for API adapter
+- `tests/test_*.py` - 12 test modules covering all components
 - Tests use `responses` library to mock HTTP calls
 - All Odoo imports are mocked via conftest.py
+
+**Test Categories**:
+- `test_adapter*.py` - API communication (23 tests)
+- `test_models.py` - Odoo model behavior (12 tests)
+- `test_webhook*.py` - Webhook processing (65 tests)
+- `test_sync_log.py` - Sync logging (12 tests)
+- `test_phase4_security.py` - Security features (12 tests)
 
 ### Mocked Odoo Components
 

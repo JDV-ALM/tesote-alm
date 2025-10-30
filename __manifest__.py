@@ -38,11 +38,7 @@ Technical Highlights:
         "account",
         "base",
     ],
-    "external_dependencies": {
-        "python": [
-            "requests"
-        ]
-    },
+    "external_dependencies": {"python": ["requests"]},
     "data": [
         "security/ir.model.access.csv",
         "data/ir_cron_data.xml",
