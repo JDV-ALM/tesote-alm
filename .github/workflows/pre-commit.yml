@@ -26,5 +26,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Run pre-commit hooks
-        run: uv run pre-commit run --all-files --show-diff-on-failure
+      - name: Run linters (check only, no auto-fix)
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
