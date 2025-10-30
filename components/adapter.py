@@ -43,7 +43,7 @@ class TesoteAdapter:
     ENDPOINTS = {
         "accounts": "accounts",
         "account_detail": "accounts/{account_id}",
-        "transactions_sync": "transactions/sync",
+        "transactions_sync": "accounts/{account_id}/transactions/sync",
         "status": "status",
         "whoami": "whoami",
     }
@@ -233,10 +233,12 @@ class TesoteAdapter:
         self, tesote_account_id: str, cursor: str | None = None, count: int = 100
     ) -> dict[str, Any]:
         """
-        Client to Tesote Sync - Fetch transaction updates using v2 sync endpoint.
+        Sync transactions using v2 nested endpoint (RESTful).
 
-        This is the primary method for syncing transactions, using cursor-based
-        synchronization for efficient incremental updates.
+        Uses: POST /api/v2/accounts/{accountId}/transactions/sync
+
+        This is the recommended endpoint that follows REST conventions with
+        the account ID in the URL path (not the request body).
 
         Args:
             tesote_account_id: The Tesote account ID to sync
@@ -251,9 +253,8 @@ class TesoteAdapter:
                 - next_cursor: Cursor for next sync
                 - has_more: Boolean indicating more data available
         """
-        # Build request data
+        # Build request data (account_id now in URL path, not body)
         data = {
-            "tesote_account_id": tesote_account_id,
             "count": min(count, 500),  # API max is 500
         }
 
@@ -266,13 +267,13 @@ class TesoteAdapter:
 
         _logger.info(
             f"=== SYNC TRANSACTIONS REQUEST ===\n"
-            f"Account ID: {tesote_account_id}\n"
+            f"Endpoint: POST /api/v2/accounts/{tesote_account_id}/transactions/sync\n"
             f"Cursor: {cursor!r} (type: {type(cursor).__name__})\n"
             f"Count: {data['count']}\n"
-            f"Full request data: {data}"
+            f"Request body: {data}"
         )
 
-        result = self._request("POST", "transactions_sync", data=data)
+        result = self._request("POST", "transactions_sync", data=data, account_id=tesote_account_id)
 
         # Log sync statistics
         added = len(result.get("added", []))

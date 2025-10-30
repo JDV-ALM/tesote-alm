@@ -138,13 +138,13 @@ class TestTesoteAdapter:
 
     @responses.activate
     def test_sync_transactions(self, adapter):
-        """Test syncing transactions with cursor."""
+        """Test syncing transactions with nested endpoint."""
         account_id = "acc-001"
 
-        # Setup mock response
+        # Setup mock response for nested endpoint
         responses.add(
             responses.POST,
-            "https://staging.tesote.com/api/v2/transactions/sync",
+            "https://staging.tesote.com/api/v2/accounts/acc-001/transactions/sync",
             json={
                 "added": [
                     {"transaction_id": "txn-001", "amount": -50.00, "description": "Coffee Shop"}

@@ -146,11 +146,11 @@ class TestTesoteAdapterSimple:
 
     @responses.activate
     def test_sync_transactions(self, adapter):
-        """Test transaction sync with cursor."""
-        # Setup mock response
+        """Test transaction sync with nested endpoint."""
+        # Setup mock response for nested endpoint
         responses.add(
             responses.POST,
-            "https://equipo.tesote.com/api/v2/transactions/sync",
+            "https://equipo.tesote.com/api/v2/accounts/acc-001/transactions/sync",
             json={
                 "added": [{"transaction_id": "txn-001", "amount": 100}],
                 "modified": [],
@@ -269,8 +269,10 @@ class TestTesoteAdapterSimple:
             call_args = mock_request.call_args
             request_data = call_args[1]["data"]
             assert "cursor" not in request_data
-            assert request_data["tesote_account_id"] == "acc-001"
+            assert "tesote_account_id" not in request_data  # Moved to URL path
             assert request_data["count"] == 100
+            # Verify account_id is passed as kwarg for URL formatting
+            assert call_args[1]["account_id"] == "acc-001"
 
     def test_sync_transactions_with_cursor(self, adapter):
         """Test sync_transactions with a valid cursor."""
@@ -290,4 +292,6 @@ class TestTesoteAdapterSimple:
             call_args = mock_request.call_args
             request_data = call_args[1]["data"]
             assert request_data["cursor"] == "existing-cursor"
-            assert request_data["tesote_account_id"] == "acc-001"
+            assert "tesote_account_id" not in request_data  # Moved to URL path
+            # Verify account_id is passed as kwarg for URL formatting
+            assert call_args[1]["account_id"] == "acc-001"
