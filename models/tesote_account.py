@@ -191,6 +191,13 @@ class TesoteAccount(models.Model):
         Returns:
             Created tesote.account record
         """
+        # DEBUG: Log full API response to diagnose missing balance
+        _logger.info(f"Creating account from API data: {data}")
+        _logger.info(
+            f"Balance fields in response - balance_cents: {data.get('balance_cents')}, "
+            f"available_balance_cents: {data.get('available_balance_cents')}"
+        )
+
         vals = {
             "backend_id": backend.id,
             "tesote_id": data["id"],
@@ -206,6 +213,12 @@ class TesoteAccount(models.Model):
         balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
         if balance_cents is not None:
             vals["balance"] = float(balance_cents) / 100.0
+            _logger.info(f"Converted balance: {balance_cents} cents -> ${vals['balance']}")
+        else:
+            _logger.warning(
+                f"No balance data in API response for account {data.get('id')}. "
+                f"API may not be returning balance_cents or available_balance_cents fields."
+            )
 
         # Store balance timestamp if available
         if "balance_data_current_as_of" in data:
@@ -230,6 +243,13 @@ class TesoteAccount(models.Model):
         """
         self.ensure_one()
 
+        # DEBUG: Log full API response to diagnose missing balance
+        _logger.info(f"Updating account {self.tesote_id} from API data: {data}")
+        _logger.info(
+            f"Balance fields in response - balance_cents: {data.get('balance_cents')}, "
+            f"available_balance_cents: {data.get('available_balance_cents')}"
+        )
+
         vals = {
             "name": data["name"],
             "bank_name": data.get("bank", {}).get("name"),
@@ -242,6 +262,12 @@ class TesoteAccount(models.Model):
         balance_cents = data.get("balance_cents") or data.get("available_balance_cents")
         if balance_cents is not None:
             vals["balance"] = float(balance_cents) / 100.0
+            _logger.info(f"Converted balance: {balance_cents} cents -> ${vals['balance']}")
+        else:
+            _logger.warning(
+                f"No balance data in API response for account {data.get('id')}. "
+                f"API may not be returning balance_cents or available_balance_cents fields."
+            )
 
         # Update balance timestamp if available
         if "balance_data_current_as_of" in data:
