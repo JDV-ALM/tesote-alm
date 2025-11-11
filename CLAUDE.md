@@ -16,6 +16,13 @@ tesote.com Odoo API Connector - Integration between Odoo 18.0 and tesote.com API
 
 ## Key Components
 
+### Error Tracking (`utils/sentry_config.py`)
+- Sentry.io integration for production error monitoring
+- DSN obfuscation via base64 encoding
+- Module-specific error filtering (only tesote_connector errors)
+- Manual capture helpers: `capture_exception()`, `capture_message()`
+- See `docs/SENTRY_USAGE.md` for detailed documentation
+
 ### API Adapter (`components/adapter.py`)
 - Handles all communication with tesote.com API v2
 - Key method: `sync_transactions()` - Uses v2 sync endpoint for cursor-based updates

@@ -1,10 +1,22 @@
 # Copyright 2024 tesote.com
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html)
 
+# Initialize Sentry error tracking early (before other imports)
+try:
+    from .utils import sentry_config
+
+    sentry_config.init_sentry()
+except ImportError:
+    # Sentry not available or running in test environment
+    pass
+except Exception:
+    # Don't let Sentry initialization block module loading
+    pass
+
 # Only import when running in Odoo context
 # Tests will mock these modules
 try:
-    from . import components, controllers, models
+    from . import components, controllers, models, utils
 except ImportError:
     # Running in test environment
     pass
