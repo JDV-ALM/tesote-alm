@@ -12,7 +12,6 @@ This module initializes Sentry SDK with:
 
 import base64
 import logging
-import sys
 import traceback
 
 _logger = logging.getLogger(__name__)

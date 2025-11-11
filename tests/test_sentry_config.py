@@ -6,7 +6,6 @@ Tests for Sentry error tracking configuration.
 """
 
 import sys
-import traceback
 from unittest.mock import MagicMock, patch
 
 import pytest
