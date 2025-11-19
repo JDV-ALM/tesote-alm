@@ -67,7 +67,7 @@ class TesoteAdapter:
                     "Authorization": f"Bearer {self.api_token}",
                     "Accept": "application/json",
                     "Content-Type": "application/json",
-                    "User-Agent": f"TesoteOdooConnector/{module_version} (API/{self.API_VERSION}; Odoo/18.0; Python/requests)",
+                    "User-Agent":  "Python/requests",
                 }
             )
         return self._session
